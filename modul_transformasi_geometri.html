@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transformasi Geometri — Modul Belajar Interaktif</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --navy-1:#12163A;
+  --navy-2:#1E2456;
+  --grid-line: rgba(255,255,255,0.055);
+  --paper:#FAF6EC;
+  --paper-dark:#EFE7D2;
+  --ink:#211C15;
+  --ink-soft:#5B5546;
+  --cream:#F5F1E6;
+  --translasi:#E39A2D;
+  --translasi-bg:#FBE9CC;
+  --refleksi:#7A6AE0;
+  --refleksi-bg:#E6E1FB;
+  --rotasi:#E0574B;
+  --rotasi-bg:#FBDEDA;
+  --dilatasi:#2CA592;
+  --dilatasi-bg:#D6F0EA;
+  --radius:22px;
+  --shadow: 0 20px 50px -20px rgba(0,0,0,0.45);
+}
+*{box-sizing:border-box;}
+
+html, body {
+  min-height: 100vh;
+  height: auto;
+}
+body{
+  margin:0;
+  font-family:'Plus Jakarta Sans', sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(122,106,224,0.20), transparent 45%),
+    radial-gradient(circle at 85% 90%, rgba(227,154,45,0.15), transparent 45%),
+    linear-gradient(160deg, var(--navy-1), var(--navy-2));
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:flex-start; /* Mulai dari atas agar scroll alami ke bawah */
+  padding:24px 16px;
+  overflow-x:hidden;
+  overflow-y:auto;
+}
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size:34px 34px;
+  pointer-events:none;
+  z-index:0;
+}
+
+#app{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:960px;
+  height: auto; /* Hilangkan batasan tinggi tetap */
+  display:flex;
+  flex-direction:column;
+  background:linear-gradient(180deg, #191E48, #12163A);
+  border-radius:28px;
+  box-shadow:var(--shadow);
+  border:1px solid rgba(255,255,255,0.08);
+  margin-bottom:40px; /* Jarak aman di bagian bawah halaman */
+}
+
+/* topbar */
+#topbar{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:20px 24px 14px;
+  color:var(--cream);
+  flex-shrink:0;
+}
+#mascot-mini{width:40px;height:40px;flex-shrink:0;}
+#topbar-text{flex:1; min-width:0;}
+#topbar-title{
+  font-family:'Space Grotesk', sans-serif;
+  font-weight:700;
+  font-size:15.5px;
+  letter-spacing:0.02em;
+}
+#topbar-sub{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  color:rgba(245,241,230,0.55);
+  margin-top:2px;
+}
+#toc-btn{
+  background:rgba(245,241,230,0.1);
+  border:1px solid rgba(245,241,230,0.18);
+  color:var(--cream);
+  border-radius:12px;
+  padding:9px 12px;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:12.5px;
+  font-weight:600;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-shrink:0;
+}
+#toc-btn:hover{background:rgba(245,241,230,0.18);}
+#progress-track{
+  height:5px;
+  background:rgba(255,255,255,0.08);
+  margin:0 24px;
+  border-radius:3px;
+  overflow:hidden;
+  flex-shrink:0;
+}
+#progress-fill{
+  height:100%;
+  background:linear-gradient(90deg, var(--dilatasi), var(--translasi));
+  border-radius:3px;
+  transition:width .4s ease;
+}
+
+#stage-wrap{
+  margin:20px 24px;
+  background:
+    linear-gradient(var(--grid-line-paper) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-paper) 1px, transparent 1px),
+    var(--paper);
+  background-size:26px 26px;
+  background-color:var(--paper);
+  border-radius:var(--radius);
+  overflow:visible; /* Biarkan konten memanjang ke bawah secara utuh */
+  position:relative;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 10px 30px -12px rgba(0,0,0,0.5);
+}
+#stage-wrap{ --grid-line-paper: rgba(30,41,59,0.055); }
+#stage{
+  padding:32px 32px 42px;
+  animation:pageIn .35s ease;
+  height: auto;
+}
+@keyframes pageIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+@media (prefers-reduced-motion: reduce){
+  #stage{animation:none;}
+}
+
+/* nav bar */
+#navbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:16px 24px 24px;
+  flex-shrink:0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.nav-btn{
+  font-family:'Plus Jakarta Sans', sans-serif;
+  font-weight:700;
+  font-size:13.5px;
+  border:none;
+  border-radius:14px;
+  padding:12px 22px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  transition:transform .15s ease, opacity .15s ease;
+}
+.nav-btn:active{transform:scale(0.96);}
+.nav-btn:disabled{opacity:0.3; cursor:not-allowed;}
+#prev-btn{background:rgba(245,241,230,0.1); color:var(--cream); border:1px solid rgba(245,241,230,0.18);}
+#prev-btn:not(:disabled):hover{background:rgba(245,241,230,0.18);}
+#next-btn{background:linear-gradient(135deg, var(--translasi), #F0BD6C); color:#2B1C05;}
+#next-btn:not(:disabled):hover{filter:brightness(1.06);}
+#page-count{
+  font-family:'IBM Plex Mono', monospace;
+  color:rgba(245,241,230,0.6);
+  font-size:12px;
+  white-space:nowrap;
+}
+
+/* ===== content typography ===== */
+.eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  padding:5px 12px;
+  border-radius:100px;
+  margin-bottom:14px;
+}
+h1.page-title{
+  font-family:'Space Grotesk', sans-serif;
+  font-size:clamp(22px, 4vw, 30px);
+  font-weight:700;
+  margin:0 0 14px;
+  line-height:1.25;
+  color:var(--ink);
+}
+h2.section-title{
+  font-family:'Space Grotesk', sans-serif;
+  font-size:18px;
+  font-weight:700;
+  margin:22px 0 10px;
+  color:var(--ink);
+}
+p, li{font-size:15px; line-height:1.7; color:var(--ink-soft);}
+strong{color:var(--ink);}
+.lead{font-size:16.5px; color:var(--ink); line-height:1.75;}
+.card{
+  background:#fff;
+  border:1px solid rgba(30,41,59,0.08);
+  border-radius:16px;
+  padding:18px 20px;
+  margin:14px 0;
+  box-shadow:0 8px 22px -14px rgba(30,20,5,0.25);
+}
+.badge{
+  display:inline-block;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  font-weight:600;
+  padding:4px 10px;
+  border-radius:100px;
+}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+.grid-4{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+@media (max-width:600px){.grid-2{grid-template-columns:1fr;} .grid-4{grid-template-columns:1fr;}}
+.center{text-align:center;}
+.small-note{font-size:12.5px; color:#8A8272; font-style:italic;}
+.formula-box{
+  background:var(--navy-1);
+  color:var(--cream);
+  border-radius:14px;
+  padding:16px 20px;
+  font-size:16px;
+  overflow-x:auto;
+  margin:14px 0;
+}
+.katex{color:inherit;}
+
+.opt-btn{
+  display:block;
+  width:100%;
+  text-align:left;
+  background:#fff;
+  border:2px solid rgba(30,41,59,0.12);
+  border-radius:12px;
+  padding:11px 15px;
+  margin:8px 0;
+  font-family:'Plus Jakarta Sans', sans-serif;
+  font-size:14.5px;
+  color:var(--ink);
+  cursor:pointer;
+  transition:border-color .15s, background .15s;
+}
+.opt-btn:hover:not(:disabled){border-color:var(--translasi); background:var(--translasi-bg);}
+.opt-btn.correct{border-color:var(--dilatasi); background:var(--dilatasi-bg); font-weight:700;}
+.opt-btn.wrong{border-color:var(--rotasi); background:var(--rotasi-bg);}
+.opt-btn.disabled{cursor:default;}
+.feedback{margin-top:10px; padding:12px 14px; border-radius:10px; font-size:14px; font-weight:600;}
+.feedback.ok{background:var(--dilatasi-bg); color:#155F52;}
+.feedback.no{background:var(--rotasi-bg); color:#8C2C22;}
+.mcq{margin:16px 0;}
+.mcq-q{font-weight:700; color:var(--ink); font-size:15px; margin-bottom:8px;}
+
+.reveal-btn{
+  background:var(--navy-1); color:var(--cream); border:none; border-radius:100px;
+  padding:10px 18px; font-weight:700; font-size:13px; cursor:pointer; margin:10px 0;
+}
+.reveal-box{
+  background:var(--paper-dark);
+  border-left:4px solid var(--translasi);
+  padding:14px 18px;
+  border-radius:8px;
+  margin-top:10px;
+  animation:pageIn .3s ease;
+}
+
+.demo-controls{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0;}
+.chip{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13px; font-weight:600;
+  border:2px solid rgba(30,41,59,0.15);
+  background:#fff;
+  border-radius:10px;
+  padding:8px 14px;
+  cursor:pointer;
+}
+.chip.active{color:#fff;}
+.plane-wrap{display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; margin-top:12px;}
+
+.plane-svg{
+  width:100%;
+  max-width:270px;
+  height:auto; 
+  aspect-ratio: 1/1;
+  flex-shrink:0; 
+  background:#fff; 
+  border-radius:14px; 
+  border:1px solid rgba(30,41,59,0.08);
+}
+.table-wrap{
+  flex:1;
+  min-width:240px;
+  overflow-x:auto;
+}
+table.coord-table{border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:13.5px; width:100%; min-width:220px;}
+table.coord-table th, table.coord-table td{border:1px solid rgba(30,41,59,0.12); padding:7px 12px; text-align:center;}
+table.coord-table th{background:var(--paper-dark);}
+
+.progress-pill{
+  display:inline-flex; align-items:center; gap:8px;
+  background:var(--paper-dark); border-radius:100px; padding:6px 14px;
+  font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600; color:var(--ink);
+  margin-top:10px;
+}
+
+/* TOC drawer */
+#toc-overlay{
+  position:fixed; inset:0; background:rgba(10,12,30,0.55);
+  display:none; z-index:100; backdrop-filter:blur(2px);
+}
+#toc-overlay.open{display:block;}
+#toc-panel{
+  position:absolute; top:0; right:0; bottom:0; width:min(320px, 82%);
+  background:var(--navy-2); padding:22px 18px; overflow-y:auto;
+  box-shadow:-10px 0 30px rgba(0,0,0,0.4);
+  transform:translateX(100%); transition:transform .28s ease;
+}
+#toc-overlay.open #toc-panel{transform:translateX(0);}
+#toc-panel h3{color:var(--cream); font-family:'Space Grotesk',sans-serif; margin:0 0 14px; font-size:16px;}
+.toc-item{
+  display:flex; gap:10px; align-items:center; padding:9px 10px; border-radius:10px;
+  cursor:pointer; color:rgba(245,241,230,0.85); font-size:13px; margin-bottom:2px;
+}
+.toc-item:hover{background:rgba(255,255,255,0.08);}
+.toc-item.current{background:rgba(227,154,45,0.22); color:#fff; font-weight:700;}
+.toc-num{font-family:'IBM Plex Mono',monospace; font-size:11px; opacity:0.6; width:20px; flex-shrink:0;}
+.toc-dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+.toc-close{
+  background:rgba(255,255,255,0.1); border:none; color:var(--cream); border-radius:10px;
+  padding:8px 12px; float:right; cursor:pointer; font-weight:700;
+}
+
+/* origin/final touches */
+.hero-illustration{display:flex; justify-content:center; margin:6px 0 18px;}
+.two-col{display:flex; gap:22px; flex-wrap:wrap; align-items:center;}
+.two-col > div{flex:1; min-width:220px;}
+input[type=text].name-input{
+  font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:700;
+  border:none; border-bottom:2.5px dashed var(--translasi); background:transparent;
+  padding:6px 4px; width:100%; color:var(--ink); text-align:center;
+}
+input[type=text].name-input:focus{outline:none; border-color:var(--rotasi);}
+textarea.journal{
+  width:100%; min-height:90px; border-radius:12px; border:1.5px solid rgba(30,41,59,0.15);
+  padding:12px 14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:14px; resize:vertical;
+}
+.check-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid rgba(30,41,59,0.08);}
+.face-btn{border:2px solid rgba(30,41,59,0.15); background:#fff; border-radius:10px; padding:6px 10px; cursor:pointer; font-size:16px;}
+.face-btn.active{border-color:var(--translasi); background:var(--translasi-bg);}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="topbar">
+    <div id="mascot-mini"></div>
+    <div id="topbar-text">
+      <div id="topbar-title">Transformasi Geometri</div>
+      <div id="topbar-sub" id="topbar-section">Pembukaan</div>
+    </div>
+    <button id="toc-btn" onclick="toggleTOC(true)">☰ Daftar Isi</button>
+  </div>
+  <div id="progress-track"><div id="progress-fill" style="width:0%"></div></div>
+
+  <div id="stage-wrap">
+    <div id="stage"></div>
+  </div>
+
+  <div id="navbar">
+    <button class="nav-btn" id="prev-btn" onclick="prevPage()">← Sebelumnya</button>
+    <div id="page-count">1 / 35</div>
+    <button class="nav-btn" id="next-btn" onclick="nextPage()">Berikutnya →</button>
+  </div>
+
+  <div id="toc-overlay" onclick="if(event.target===this)toggleTOC(false)">
+    <div id="toc-panel">
+      <button class="toc-close" onclick="toggleTOC(false)">✕ Tutup</button>
+      <h3>Daftar Isi</h3>
+      <div id="toc-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const qState = {};       // jawaban kuis: {selected}
+const revealState = {};  // toggle pembahasan
+const demoState = {
+  translasi:{a:3,b:2},
+  refleksi:{mode:'x'},
+  rotasi:{sudut:90},
+  dilatasi:{k:2},
+};
+const selfCheck = {translasi:null, refleksi:null, rotasi:null, dilatasi:null};
+let journalText = "";
+let studentName = "";
+
+function scoreOf(prefix){
+  let correct=0, total=0, answered=0;
+  Object.keys(qState).forEach(k=>{
+    if(k.startsWith(prefix)){
+      total++;
+      answered++;
+      if(qState[k].correct) correct++;
+    }
+  });
+  return {correct, answered, total};
+}
+
+/* ============ MASCOT (origami, facet 3D-style) ============ */
+function mascotSVG(size=64, extra=''){
+  return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" style="${extra}">
+    <polygon points="60,10 100,70 60,58" fill="#E39A2D"/>
+    <polygon points="60,10 20,70 60,58" fill="#F0BD6C"/>
+    <polygon points="60,58 100,70 66,110 34,110 20,70" fill="#D98429"/>
+    <polygon points="60,58 34,110 20,70" fill="#C97317"/>
+    <polygon points="60,58 66,110 100,70" fill="#F2A93B"/>
+    <polygon points="46,46 54,58 40,58" fill="#211C15" opacity="0.75"/>
+  </svg>`;
+}
+function isoCube(x,y,s,color1,color2,color3){
+  return `<g transform="translate(${x},${y})">
+    <polygon points="0,0 ${s},${-s*0.55} ${2*s},0 ${s},${s*0.55}" fill="${color1}"/>
+    <polygon points="0,0 ${s},${s*0.55} ${s},${s*1.6} 0,${s*1.05}" fill="${color2}"/>
+    <polygon points="${2*s},0 ${s},${s*0.55} ${s},${s*1.6} ${2*s},${s*1.05}" fill="${color3}"/>
+  </g>`;
+}
+
+function plane({points, image=null, range=6, mirror=null, rays=false, accent='#E39A2D', showAxesLabel=true}){
+  const size=260, cx=size/2, cy=size/2;
+  const scale=(size-36)/(2*range);
+  const X=x=>cx+x*scale, Y=y=>cy-y*scale;
+  let grid='';
+  for(let i=-range;i<=range;i++){
+    grid+=`<line x1="${X(i)}" y1="${Y(-range)}" x2="${X(i)}" y2="${Y(range)}" stroke="rgba(30,41,59,0.09)"/>`;
+    grid+=`<line x1="${X(-range)}" y1="${Y(i)}" x2="${X(range)}" y2="${Y(i)}" stroke="rgba(30,41,59,0.09)"/>`;
+  }
+  const axes=`<line x1="${X(-range)}" y1="${Y(0)}" x2="${X(range)}" y2="${Y(0)}" stroke="#211C15" stroke-width="1.6"/>
+              <line x1="${X(0)}" y1="${Y(-range)}" x2="${X(0)}" y2="${Y(range)}" stroke="#211C15" stroke-width="1.6"/>`;
+  let mirrorLine='';
+  if(mirror==='x') mirrorLine=`<line x1="${X(-range)}" y1="${Y(0)}" x2="${X(range)}" y2="${Y(0)}" stroke="#7A6AE0" stroke-width="2.4" stroke-dasharray="6 4"/>`;
+  if(mirror==='y') mirrorLine=`<line x1="${X(0)}" y1="${Y(-range)}" x2="${X(0)}" y2="${Y(range)}" stroke="#7A6AE0" stroke-width="2.4" stroke-dasharray="6 4"/>`;
+  if(mirror==='yx') mirrorLine=`<line x1="${X(-range)}" y1="${Y(-range)}" x2="${X(range)}" y2="${Y(range)}" stroke="#7A6AE0" stroke-width="2.4" stroke-dasharray="6 4"/>`;
+  if(mirror==='y-x') mirrorLine=`<line x1="${X(-range)}" y1="${Y(range)}" x2="${X(range)}" y2="${Y(-range)}" stroke="#7A6AE0" stroke-width="2.4" stroke-dasharray="6 4"/>`;
+  if(mirror==='o') mirrorLine=`<circle cx="${X(0)}" cy="${Y(0)}" r="5" fill="#7A6AE0"/>`;
+  let raysHtml='';
+  if(rays){
+    points.forEach(p=>{
+      raysHtml+=`<line x1="${X(0)}" y1="${Y(0)}" x2="${X(p[0])}" y2="${Y(p[1])}" stroke="#2CA592" stroke-width="1.2" stroke-dasharray="3 3"/>`;
+    });
+  }
+  const poly=points.map(p=>`${X(p[0])},${Y(p[1])}`).join(' ');
+  let imgPoly='';
+  if(image){
+    const ip=image.map(p=>`${X(p[0])},${Y(p[1])}`).join(' ');
+    imgPoly=`<polygon points="${ip}" fill="${accent}30" stroke="${accent}" stroke-width="2.6"/>`;
+    image.forEach(p=>{imgPoly+=`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="3.2" fill="${accent}"/>`;});
+  }
+  let ptDots='';
+  points.forEach(p=>{ptDots+=`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="3.2" fill="#211C15"/>`;});
+  return `<svg class="plane-svg" viewBox="0 0 ${size} ${size}">
+    ${grid}${axes}${raysHtml}${mirrorLine}
+    <polygon points="${poly}" fill="#21181">
+    </polygon>
+    <polygon points="${poly}" fill="rgba(33,28,21,0.12)" stroke="#211C15" stroke-width="2.4"/>
+    ${ptDots}${imgPoly}
+  </svg>`;
+}
+function coordTable(labels, before, after){
+  let rows = before.map((p,i)=>`<tr><td>${labels[i]}(${p[0]}, ${p[1]})</td><td>→</td><td>${labels[i]}'(${after[i][0]}, ${after[i][1]})</td></tr>`).join('');
+  return `<div class="table-wrap"><table class="coord-table"><thead><tr><th>Titik Asal</th><th></th><th>Bayangan</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* ============ MCQ HELPER ============ */
+function mcq(qid, question, options, correctIdx, explain){
+  const state = qState[qid];
+  const answered = !!state;
+  const opts = options.map((opt,i)=>{
+    let cls='opt-btn';
+    if(answered){
+      cls += ' disabled';
+      if(i===correctIdx) cls+=' correct';
+      else if(i===state.selected) cls+=' wrong';
+    }
+    return `<button class="${cls}" data-qid="${qid}" data-idx="${i}" data-correct="${correctIdx}" ${answered?'disabled':''}>${String.fromCharCode(65+i)}. ${opt}</button>`;
+  }).join('');
+  let fb='';
+  if(answered){
+    const ok = state.selected===correctIdx;
+    fb=`<div class="feedback ${ok?'ok':'no'}">${ok?'✅ Tepat sekali!':'❌ Belum tepat.'} ${explain}</div>`;
+  }
+  return `<div class="mcq"><p class="mcq-q">${question}</p><div class="mcq-opts">${opts}</div>${fb}</div>`;
+}
+
+/* ============ SECTION META ============ */
+const SECTIONS = {
+  intro:{label:'Pembukaan', color:'#F5F1E6', dot:'#B9B39F'},
+  warmup:{label:'Warm-up', color:'#E39A2D', dot:'#E39A2D'},
+  connect:{label:'Dunia Nyata', color:'#2CA592', dot:'#2CA592'},
+  concept:{label:'Materi', color:'#7A6AE0', dot:'#7A6AE0'},
+  practice:{label:'Latihan Soal', color:'#E0574B', dot:'#E0574B'},
+  closing:{label:'Penutup', color:'#F5F1E6', dot:'#B9B39F'},
+};
+
+/* ============ PAGE CONTENT ============ */
+const pages = [];
+
+/* ---- 1. COVER ---- */
+pages.push({section:'intro', title:'Sampul', render:()=>`
+  <div class="center">
+    <span class="eyebrow" style="background:var(--translasi-bg); color:#7A4F0E;">Kurikulum Merdeka · Kelas 8 SMP</span>
+    <div class="hero-illustration">
+      <svg viewBox="0 0 400 220" width="100%" style="max-width:380px">
+        ${isoCube(30,120,26,'#7A6AE0','#5B4FC7','#4A3FA8')}
+        ${isoCube(280,140,22,'#2CA592','#1F8A79','#166B5D')}
+        ${isoCube(320,60,18,'#E0574B','#C1362A','#9E271D')}
+        <g transform="translate(160,20)">${mascotSVG(150)}</g>
+      </svg>
+    </div>
+    <h1 class="page-title" style="font-size:32px;">Transformasi Geometri</h1>
+    <p class="lead">Translasi · Refleksi · Rotasi · Dilatasi</p>
+    <p class="small-note">Modul belajar interaktif — geser, cerminkan, putar, dan perbesar bayanganmu sendiri di layar.</p>
+    <button class="reveal-btn" style="margin-top:18px; background:linear-gradient(135deg,#E39A2D,#F0BD6C); color:#2B1C05;" onclick="nextPage()">Mulai Belajar →</button>
+  </div>
+`});
+
+/* ---- 2. TUJUAN ---- */
+pages.push({section:'intro', title:'Tujuan Pembelajaran', render:()=>`
+  <span class="eyebrow" style="background:var(--paper-dark); color:var(--ink-soft);">Sebelum Mulai</span>
+  <h1 class="page-title">Setelah belajar bab ini, kamu akan bisa:</h1>
+  <div class="card">
+    <p>🔹 Menjelaskan <strong>apa itu transformasi geometri</strong> dan menyebutkan empat jenisnya.</p>
+  </div>
+  <div class="card">
+    <p>🔹 Menentukan <strong>bayangan (hasil transformasi)</strong> suatu titik atau bangun pada koordinat kartesius, untuk translasi, refleksi, rotasi, maupun dilatasi.</p>
+  </div>
+  <div class="card">
+    <p>🔹 Melihat kaitan transformasi geometri dengan hal-hal di sekitarmu — origami, cermin, roda, sampai peta.</p>
+  </div>
+  <div class="card">
+    <p>🔹 Menyelesaikan <strong>soal cerita</strong> yang melibatkan pergeseran, pencerminan, perputaran, atau perbesaran suatu objek.</p>
+  </div>
+  <p class="small-note">Santai saja — kita akan pelan-pelan, mulai dari pemanasan dulu di halaman berikutnya. 😉</p>
+`});
+
+/* ---- WARM UP DATA (3-10) ---- */
+const warmupQ = [
+  {q:"Titik tempat sumbu-x dan sumbu-y berpotongan disebut titik…", opts:["Kutub","Asal (origin)","Pusat massa","Ekstrem"], correct:1, ex:"Titik itu bernama <strong>titik asal</strong>, ditulis O(0, 0). Titik ini akan sering jadi 'pusat' pada rotasi dan dilatasi nanti!"},
+  {q:"Titik P berada 3 langkah ke kanan dan 4 langkah ke atas dari titik asal. Koordinat P adalah…", opts:["P(4, 3)","P(3, 4)","P(-3, 4)","P(3, -4)"], correct:1, ex:"Urutannya selalu (x, y) — geser <strong>kanan/kiri dulu (x)</strong>, baru <strong>atas/bawah (y)</strong>."},
+  {q:"Titik dengan koordinat (-2, 5) terletak di kuadran…", opts:["I","II","III","IV"], correct:1, ex:"x negatif & y positif = <strong>Kuadran II</strong> (kiri atas)."},
+  {q:"Kamu bercermin di depan cermin datar. Bayangan wajahmu di cermin jaraknya ke cermin dibanding wajah aslimu…", opts:["Selalu lebih jauh","Selalu lebih dekat","Sama jauhnya","Tidak bisa ditentukan"], correct:2, ex:"Cermin selalu membuat bayangan pada <strong>jarak yang sama</strong> dari cermin, hanya di sisi berlawanan. Ini akan jadi dasar konsep refleksi!"},
+  {q:"Jarum jam bergerak dari angka 12 ke angka 3. Arah gerakannya disebut arah…", opts:["Berlawanan arah jarum jam","Searah jarum jam","Diagonal","Tidak beraturan"], correct:1, ex:"Itulah arah <strong>searah jarum jam (clockwise)</strong>. Nanti di materi rotasi, arah <em>berlawanan</em> jarum jam justru dianggap arah positif!"},
+  {q:"Sebuah foto difotokopi dengan perbesaran 200%. Ukuran hasil fotokopi dibanding aslinya menjadi…", opts:["Sama besar","Setengah kali","Dua kali lebih besar","Dua kali lebih kecil"], correct:2, ex:"200% berarti <strong>2 kali lebih besar</strong> dari ukuran asli. Ini contoh nyata dari konsep <em>dilatasi</em>."},
+  {q:"Sebuah meja digeser 2 langkah ke kanan tanpa diputar atau dibalik. Bentuk dan ukuran mejanya…", opts:["Berubah total","Tetap sama persis","Membesar","Mengecil separuh"], correct:1, ex:"Kalau cuma <strong>digeser</strong>, bentuk dan ukurannya tidak berubah sama sekali — cuma posisinya yang pindah."},
+  {q:"Penulisan koordinat yang benar untuk 'titik Q dengan absis 5 dan ordinat -1' adalah…", opts:["Q(-1, 5)","Q(5, -1)","Q(5, 1)","Q(1, -5)"], correct:1, ex:"Absis = koordinat x, ordinat = koordinat y. Jadi ditulis <strong>Q(5, -1)</strong>."},
+];
+warmupQ.forEach((item,i)=>{
+  pages.push({section:'warmup', title:'Warm-up '+(i+1), render:()=>`
+    <span class="eyebrow" style="background:var(--translasi-bg); color:#7A4F0E;">Warm-up · Soal ${i+1} dari 8</span>
+    <h1 class="page-title" style="font-size:20px;">Yuk pemanasan dulu sebelum masuk materi inti! 🔥</h1>
+    ${mcq('warmup'+i, item.q, item.opts, item.correct, item.ex)}
+  `});
+});
+pages[pages.length-1].after = ()=>{}; // last warmup page could show recap below via separate logic
+/* recap injected into warmup soal 8's render by wrapping */
+const _origWarmup8 = pages[pages.length-1].render;
+pages[pages.length-1].render = ()=>{
+  const s = scoreOf('warmup');
+  let recap = '';
+  if(s.answered===8){
+    recap = `<div class="card" style="margin-top:18px; border-color:var(--dilatasi);">
+      <p><strong>Skor warm-up kamu: ${s.correct} / 8</strong></p>
+      <p class="small-note">Berapa pun skornya, tenang saja — warm-up ini cuma pemanasan otak. Yuk lanjut masuk ke materinya! 🚀</p>
+    </div>`;
+  }
+  return _origWarmup8() + recap;
+};
+
+/* ---- 11. REAL WORLD 1 ---- */
+pages.push({section:'connect', title:'Transformasi di Sekitar Kita', render:()=>`
+  <span class="eyebrow" style="background:var(--dilatasi-bg); color:#155F52;">Koneksi Dunia Nyata</span>
+  <h1 class="page-title">Ternyata, transformasi geometri ada di mana-mana</h1>
+  <p class="lead">Tanpa sadar, kamu sudah sering melihat translasi, refleksi, rotasi, dan dilatasi terjadi di kehidupan sehari-hari.</p>
+  <div class="grid-4">
+    <div class="card center">
+      <svg viewBox="0 0 100 70" width="70"><rect x="10" y="30" width="18" height="18" fill="#E39A2D" rx="3"/><rect x="45" y="30" width="18" height="18" fill="#F0BD6C" rx="3"/><rect x="75" y="30" width="18" height="18" fill="#E39A2D" rx="3" opacity="0.6"/><line x1="10" y1="55" x2="93" y2="55" stroke="#211C15" stroke-width="2"/></svg>
+      <p><strong>Translasi</strong><br>Kereta berjalan lurus di rel, tanpa berputar atau berubah bentuk.</p>
+    </div>
+    <div class="card center">
+      <svg viewBox="0 0 100 70" width="70"><line x1="50" y1="5" x2="50" y2="65" stroke="#7A6AE0" stroke-width="2" stroke-dasharray="4 3"/><polygon points="35,15 45,15 45,45 35,45" fill="#7A6AE0"/><polygon points="65,15 55,15 55,45 65,45" fill="#B9AEF0"/></svg>
+      <p><strong>Refleksi</strong><br>Pantulan wajahmu di cermin atau di permukaan air yang tenang.</p>
+    </div>
+    <div class="card center">
+      <svg viewBox="0 0 100 70" width="70"><circle cx="50" cy="35" r="24" fill="none" stroke="#E0574B" stroke-width="3"/><line x1="50" y1="35" x2="50" y2="14" stroke="#E0574B" stroke-width="3"/><line x1="50" y1="35" x2="68" y2="35" stroke="#9E271D" stroke-width="3"/></svg>
+      <p><strong>Rotasi</strong><br>Kincir angin dan roda sepeda yang berputar pada porosnya.</p>
+    </div>
+    <div class="card center">
+      <svg viewBox="0 0 100 70" width="70"><rect x="15" y="45" width="12" height="12" fill="#2CA592"/><rect x="45" y="15" width="36" height="36" fill="#2CA592" opacity="0.35" stroke="#2CA592" stroke-width="2"/></svg>
+      <p><strong>Dilatasi</strong><br>Foto yang di-zoom, atau peta yang diperbesar/diperkecil skalanya.</p>
+    </div>
+  </div>
+`});
+
+/* ---- 12. REAL WORLD 2 - ORIGAMI ---- */
+pages.push({section:'connect', title:'Origami: satu contoh, empat transformasi', render:()=>`
+  <span class="eyebrow" style="background:var(--dilatasi-bg); color:#155F52;">Koneksi Dunia Nyata</span>
+  <h1 class="page-title">Kertas origami menyimpan keempat transformasi sekaligus</h1>
+  <div class="two-col">
+    <div>
+      <div class="hero-illustration">${mascotSVG(140)}</div>
+    </div>
+    <div>
+      <p>Coba perhatikan saat melipat origami:</p>
+      <ul>
+        <li><strong>Melipat kertas</strong> menjadi dua = <span style="color:var(--refleksi); font-weight:700;">refleksi</span> (satu sisi jadi bayangan cermin sisi lainnya)</li>
+        <li><strong>Memutar kertas</strong> sebelum melipat sisi berikutnya = <span style="color:var(--rotasi); font-weight:700;">rotasi</span></li>
+        <li><strong>Menggeser</strong> lipatan sejajar ke posisi lain = <span style="color:var(--translasi); font-weight:700;">translasi</span></li>
+        <li><strong>Motif batik/kain</strong> yang pola kecilnya diulang jadi lebih besar = <span style="color:var(--dilatasi); font-weight:700;">dilatasi</span></li>
+      </ul>
+    </div>
+  </div>
+  <p class="lead">Jadi, keempat transformasi ini bukan rumus asing — itu cuma cara matematika "menulis ulang" gerakan yang sudah biasa kamu lakukan!</p>
+`});
+
+/* ---- 13. PENGANTAR KONSEP ---- */
+pages.push({section:'concept', title:'Apa itu Transformasi Geometri?', render:()=>`
+  <span class="eyebrow" style="background:var(--refleksi-bg); color:#443A96;">Konsep Inti</span>
+  <h1 class="page-title">Apa itu Transformasi Geometri?</h1>
+  <p class="lead"><strong>Transformasi geometri</strong> adalah proses memindahkan, mencerminkan, memutar, atau mengubah ukuran suatu titik/bangun tanpa mengubah bentuk dasarnya (kecuali ukurannya, pada dilatasi).</p>
+  <div class="card">
+    <p>📌 Bangun atau titik <strong>sebelum</strong> ditransformasi disebut <strong>objek</strong> (misal titik A).</p>
+    <p>📌 Bangun atau titik <strong>setelah</strong> ditransformasi disebut <strong>bayangan</strong>, ditulis dengan tanda aksen: A → <strong>A′</strong> (dibaca "A aksen").</p>
+  </div>
+  <h2 class="section-title">Empat jenis yang akan kita pelajari:</h2>
+  <div class="grid-4">
+    <div class="card center" style="border-top:4px solid var(--translasi);"><p><strong>Translasi</strong><br><span class="small-note">menggeser</span></p></div>
+    <div class="card center" style="border-top:4px solid var(--refleksi);"><p><strong>Refleksi</strong><br><span class="small-note">mencerminkan</span></p></div>
+    <div class="card center" style="border-top:4px solid var(--rotasi);"><p><strong>Rotasi</strong><br><span class="small-note">memutar</span></p></div>
+    <div class="card center" style="border-top:4px solid var(--dilatasi);"><p><strong>Dilatasi</strong><br><span class="small-note">memperbesar/memperkecil</span></p></div>
+  </div>
+`});
+
+/* ---- 14. MATERI TRANSLASI ---- */
+pages.push({section:'concept', title:'Translasi — Konsep', render:()=>`
+  <span class="eyebrow" style="background:var(--translasi-bg); color:#7A4F0E;">Materi · Translasi</span>
+  <h1 class="page-title">Translasi (Pergeseran)</h1>
+  <p class="lead"><strong>Translasi</strong> adalah memindahkan setiap titik suatu bangun sejauh jarak dan arah tertentu, tanpa mengubah bentuk maupun ukurannya.</p>
+  <div class="card">
+    <p>Arah dan jarak pergeserannya ditulis sebagai <strong>vektor translasi</strong> \\(T(a, b)\\), artinya:</p>
+    <ul>
+      <li>geser <strong>a</strong> satuan mendatar (kanan jika positif, kiri jika negatif)</li>
+      <li>geser <strong>b</strong> satuan tegak (atas jika positif, bawah jika negatif)</li>
+    </ul>
+  </div>
+  <div class="formula-box">\\[ (x, y) \\xrightarrow{\\ T(a,\\,b)\\ } (x+a,\\ y+b) \\]</div>
+  <p class="small-note">Ingat saja: bagian x tinggal ditambah a, bagian y tinggal ditambah b. Tidak ada yang berubah bentuknya!</p>
+`});
+
+/* ---- 15. TRANSLASI VISUAL ---- */
+pages.push({section:'concept', title:'Translasi — Coba Sendiri', render:()=>{
+  const base=[[-1,-1],[1,-1],[0,2]];
+  const {a,b}=demoState.translasi;
+  const img = base.map(p=>[p[0]+a, p[1]+b]);
+  const opts=[-4,-2,0,2,4];
+  const chipsA = opts.map(v=>`<button class="chip ${v===a?'active':''}" style="${v===a?'background:var(--translasi);border-color:var(--translasi)':''}" onclick="setDemo('translasi','a',${v})">a = ${v}</button>`).join('');
+  const chipsB = opts.map(v=>`<button class="chip ${v===b?'active':''}" style="${v===b?'background:var(--translasi);border-color:var(--translasi)':''}" onclick="setDemo('translasi','b',${v})">b = ${v}</button>`).join('');
+  return `
+  <span class="eyebrow" style="background:var(--translasi-bg); color:#7A4F0E;">Materi · Translasi Interaktif</span>
+  <h1 class="page-title">Coba geser segitiganya sendiri!</h1>
+  <p>Pilih nilai <strong>a</strong> (geser mendatar) dan <strong>b</strong> (geser tegak), lalu perhatikan bayangannya bergerak.</p>
+  <div class="demo-controls"><strong style="width:100%; font-size:13px;">Geser mendatar (a):</strong>${chipsA}</div>
+  <div class="demo-controls"><strong style="width:100%; font-size:13px;">Geser tegak (b):</strong>${chipsB}</div>
+  <div class="plane-wrap">
+    ${plane({points:base, image:img, range:6, accent:'#E39A2D'})}
+    <div>
+      ${coordTable(['A','B','C'], base, img)}
+      <div class="formula-box" style="margin-top:12px;">\\[ T(${a},\\,${b}) \\]</div>
+    </div>
+  </div>
+  `;
+}});
+
+/* ---- 16. CONTOH SOAL TRANSLASI ---- */
+pages.push({section:'concept', title:'Contoh Soal Translasi', render:()=>`
+  <span class="eyebrow" style="background:var(--translasi-bg); color:#7A4F0E;">Contoh Soal · Translasi</span>
+  <h1 class="page-title">Yuk coba selesaikan bareng</h1>
+  <div class="card">
+    <p><strong>Soal:</strong> Titik \\(A(2, -3)\\) ditranslasikan oleh \\(T(4, 5)\\). Tentukan koordinat bayangan \\(A'\\)!</p>
+    <button class="reveal-btn" onclick="toggleReveal('t1')">💡 Lihat Pembahasan</button>
+    <div id="reveal-t1"></div>
+  </div>
+  ${mcq('concept_t1', "Bayangan dari titik B(-1, 4) oleh translasi T(3, -2) is...", ["B'(2, 2)","B'(-4, 6)","B'(2, -2)","B'(4, 2)"], 0, "Hitung: x' = -1+3 = 2, y' = 4+(-2) = 2, jadi B'(2, 2).")}
+`, after:(stage)=>{
+  const box = stage.querySelector('#reveal-t1');
+  if(box && revealState['t1']){
+    box.innerHTML = `<div class="reveal-box">
+      <p>x' = x + a = 2 + 4 = <strong>6</strong></p>
+      <p>y' = y + b = -3 + 5 = <strong>2</strong></p>
+      <p>Jadi, \\(A'(6,\\ 2)\\).</p>
+    </div>`;
+    if(window.renderMathInElement) renderMathInElement(box);
+  }
+}});
+
+/* ---- 17. MATERI REFLEKSI ---- */
+pages.push({section:'concept', title:'Refleksi — Konsep', render:()=>`
+  <span class="eyebrow" style="background:var(--refleksi-bg); color:#443A96;">Materi · Refleksi</span>
+  <h1 class="page-title">Refleksi (Pencerminan)</h1>
+  <p class="lead"><strong>Refleksi</strong> adalah mencerminkan suatu titik/bangun terhadap sebuah garis (cermin), sehingga bayangannya berjarak sama ke cermin, tapi di sisi berlawanan.</p>
+  <div class="card">
+    <table class="coord-table" style="width:100%;">
+      <thead><tr><th>Cermin</th><th>Aturan bayangan</th></tr></thead>
+      <tbody>
+        <tr><td>Sumbu-x</td><td>\\((x,y)\\to(x,-y)\\)</td></tr>
+        <tr><td>Sumbu-y</td><td>\\((x,y)\\to(-x,y)\\)</td></tr>
+        <tr><td>Garis \\(y=x\\)</td><td>\\((x,y)\\to(y,x)\\)</td></tr>
+        <tr><td>Garis \\(y=-x\\)</td><td>\\((x,y)\\to(-y,-x)\\)</td></tr>
+        <tr><td>Titik asal O</td><td>\\((x,y)\\to(-x,-y)\\)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small-note">Tips: bayangkan cerminnya benar-benar ada di garis itu — hasilnya pasti simetris terhadap garis tersebut.</p>
+`});
+
+/* ---- 18. REFLEKSI VISUAL ---- */
+const reflFormula = {x:'(x,y)\\to(x,-y)', y:'(x,y)\\to(-x,y)', yx:'(x,y)\\to(y,x)', 'y-x':'(x,y)\\to(-y,-x)', o:'(x,y)\\to(-x,-y)'};
+function reflect(p, mode){
+  const [x,y]=p;
+  if(mode==='x') return [x,-y];
+  if(mode==='y') return [-x,y];
+  if(mode==='yx') return [y,x];
+  if(mode==='y-x') return [-y,-x];
+  if(mode==='o') return [-x,-y];
+  return p;
+}
+pages.push({section:'concept', title:'Refleksi — Coba Sendiri', render:()=>{
+  const base=[[1,1],[4,1],[1,3]];
+  const mode = demoState.refleksi.mode;
+  const img = base.map(p=>reflect(p, mode));
+  const labels = {x:'Sumbu-x', y:'Sumbu-y', yx:'Garis y=x', 'y-x':'Garis y=-x', o:'Titik asal O'};
+  const chips = Object.keys(labels).map(m=>`<button class="chip ${m===mode?'active':''}" style="${m===mode?'background:var(--refleksi);border-color:var(--refleksi);color:#fff':''}" onclick="setDemo('refleksi','mode','${m}')">${labels[m]}</button>`).join('');
+  return `
+  <span class="eyebrow" style="background:var(--refleksi-bg); color:#443A96;">Materi · Refleksi Interaktif</span>
+  <h1 class="page-title">Pilih cerminnya, lihat bayangannya!</h1>
+  <div class="demo-controls">${chips}</div>
+  <div class="plane-wrap">
+    ${plane({points:base, image:img, range:6, mirror:mode, accent:'#7A6AE0'})}
+    <div>
+      ${coordTable(['A','B','C'], base, img)}
+      <div class="formula-box" style="margin-top:12px;">\\[ ${reflFormula[mode]} \\]</div>
+    </div>
+  </div>
+  `;
+}});
+
+/* ---- 19. CONTOH SOAL REFLEKSI ---- */
+pages.push({section:'concept', title:'Contoh Soal Refleksi', render:()=>`
+  <span class="eyebrow" style="background:var(--refleksi-bg); color:#443A96;">Contoh Soal · Refleksi</span>
+  <h1 class="page-title">Yuk coba selesaikan bareng</h1>
+  <div class="card">
+    <p><strong>Soal:</strong> Titik \\(P(3, -5)\\) dicerminkan terhadap sumbu-y. Tentukan bayangan \\(P'\\)!</p>
+    <button class="reveal-btn" onclick="toggleReveal('r1')">💡 Lihat Pembahasan</button>
+    <div id="reveal-r1"></div>
+  </div>
+  ${mcq('concept_r1', "Bayangan titik Q(-2, 6) terhadap garis y = x adalah…", ["Q'(2, -6)","Q'(6, -2)","Q'(-2, -6)","Q'(6, 2)"], 1, "Cermin garis y=x menukar posisi x dan y: (x,y) → (y,x), jadi Q'(6, -2).")}
+`, after:(stage)=>{
+  const box = stage.querySelector('#reveal-r1');
+  if(box && revealState['r1']){
+    box.innerHTML = `<div class="reveal-box">
+      <p>Cermin sumbu-y: \\((x,y)\\to(-x,y)\\)</p>
+      <p>x' = -3, y' = -5 (tetap)</p>
+      <p>Jadi, \\(P'(-3,\\ -5)\\).</p>
+    </div>`;
+    if(window.renderMathInElement) renderMathInElement(box);
+  }
+}});
+
+/* ---- 20. MATERI ROTASI ---- */
+pages.push({section:'concept', title:'Rotasi — Konsep', render:()=>`
+  <span class="eyebrow" style="background:var(--rotasi-bg); color:#8C2C22;">Materi · Rotasi</span>
+  <h1 class="page-title">Rotasi (Perputaran)</h1>
+  <p class="lead"><strong>Rotasi</strong> adalah memutar suatu titik/bangun terhadap sebuah titik pusat sejauh sudut tertentu. Kita akan fokus pada rotasi berpusat di titik asal O(0,0).</p>
+  <div class="card">
+    <p>Arah <strong>positif</strong> dalam matematika = <strong>berlawanan arah jarum jam (CCW)</strong>.</p>
+    <table class="coord-table" style="width:100%;">
+      <thead><tr><th>Sudut putar (pusat O)</th><th>Aturan bayangan</th></tr></thead>
+      <tbody>
+        <tr><td>90° (CCW)</td><td>\\((x,y)\\to(-y,x)\\)</td></tr>
+        <tr><td>180°</td><td>\\((x,y)\\to(-x,-y)\\)</td></tr>
+        <tr><td>270° CCW (=90° searah jarum jam)</td><td>\\((x,y)\\to(y,-x)\\)</td></tr>
+      </tbody>
+    </table>
+  </div>
+`});
+
+/* ---- 21. ROTASI VISUAL ---- */
+function rotate(p, deg){
+  const [x,y]=p;
+  if(deg===90) return [-y,x];
+  if(deg===180) return [-x,-y];
+  if(deg===270) return [y,-x];
+  return p;
+}
+const rotFormula = {90:'(x,y)\\to(-y,x)', 180:'(x,y)\\to(-x,-y)', 270:'(x,y)\\to(y,-x)'};
+pages.push({section:'concept', title:'Rotasi — Coba Sendiri', render:()=>{
+  const base=[[1,1],[5,1],[1,3]];
+  const sudut = demoState.rotasi.sudut;
+  const img = base.map(p=>rotate(p,sudut));
+  const chips=[90,180,270].map(d=>`<button class="chip ${d===sudut?'active':''}" style="${d===sudut?'background:var(--rotasi);border-color:var(--rotasi);color:#fff':''}" onclick="setDemo('rotasi','sudut',${d})">${d}° CCW</button>`).join('');
+  return `
+  <span class="eyebrow" style="background:var(--rotasi-bg); color:#8C2C22;">Materi · Rotasi Interaktif</span>
+  <h1 class="page-title">Putar bangunnya, pusat di titik O!</h1>
+  <div class="demo-controls">${chips}</div>
+  <div class="plane-wrap">
+    ${plane({points:base, image:img, range:6, accent:'#E0574B'})}
+    <div>
+      ${coordTable(['A','B','C'], base, img)}
+      <div class="formula-box" style="margin-top:12px;">\\[ ${rotFormula[sudut]} \\]</div>
+    </div>
+  </div>
+  `;
+}});
+
+/* ---- 22. CONTOH SOAL ROTASI ---- */
+pages.push({section:'concept', title:'Contoh Soal Rotasi', render:()=>`
+  <span class="eyebrow" style="background:var(--rotasi-bg); color:#8C2C22;">Contoh Soal · Rotasi</span>
+  <h1 class="page-title">Yuk coba selesaikan bareng</h1>
+  <div class="card">
+    <p><strong>Soal:</strong> Titik \\(K(4, -2)\\) dirotasikan 180° dengan pusat O. Tentukan bayangan \\(K'\\)!</p>
+    <button class="reveal-btn" onclick="toggleReveal('rt1')">💡 Lihat Pembahasan</button>
+    <div id="reveal-rt1"></div>
+  </div>
+  ${mcq('concept_rt1', "Bayangan titik L(3, 5) diputar 90° berlawanan arah jarum jam dengan pusat O adalah…", ["L'(5, 3)","L'(-5, 3)","L'(5, -3)","L'(-5, -3)"], 1, "Rotasi 90° CCW: (x,y) → (-y, x), jadi L'(-5, 3).")}
+`, after:(stage)=>{
+  const box = stage.querySelector('#reveal-rt1');
+  if(box && revealState['rt1']){
+    box.innerHTML = `<div class="reveal-box">
+      <p>Rotasi 180°: \\((x,y)\\to(-x,-y)\\)</p>
+      <p>x' = -4, y' = 2</p>
+      <p>Jadi, \\(K'(-4,\\ 2)\\).</p>
+    </div>`;
+    if(window.renderMathInElement) renderMathInElement(box);
+  }
+}});
+
+/* ---- 23. MATERI DILATASI ---- */
+pages.push({section:'concept', title:'Dilatasi — Konsep', render:()=>`
+  <span class="eyebrow" style="background:var(--dilatasi-bg); color:#155F52;">Materi · Dilatasi</span>
+  <h1 class="page-title">Dilatasi (Perbesaran/Perkecilan)</h1>
+  <p class="lead"><strong>Dilatasi</strong> mengubah ukuran suatu bangun dengan faktor skala \\(k\\), berpusat di suatu titik. Bentuknya tetap sebangun, hanya ukurannya berubah.</p>
+  <div class="formula-box">\\[ (x,y) \\xrightarrow{\\ [O,\\,k]\\ } (kx,\\ ky) \\]</div>
+  <div class="card">
+    <ul>
+      <li>Jika \\(|k| > 1\\) → bangun <strong>diperbesar</strong></li>
+      <li>Jika \\(0 < |k| < 1\\) → bangun <strong>diperkecil</strong></li>
+      <li>Jika \\(k\\) negatif → bayangan pindah ke <strong>sisi berlawanan</strong> dari pusat</li>
+    </ul>
+  </div>
+  <p class="small-note">Contoh nyata: mengatur zoom pada peta digital, atau memperbesar hasil fotokopi.</p>
+`});
+
+/* ---- 24. DILATASI VISUAL ---- */
+pages.push({section:'concept', title:'Dilatasi — Coba Sendiri', render:()=>{
+  const base=[[1,1],[2,1],[1,2]];
+  const k = demoState.dilatasi.k;
+  const img = base.map(p=>[+(p[0]*k).toFixed(1), +(p[1]*k).toFixed(1)]);
+  const opts=[-2,-1,0.5,1.5,2,3];
+  const chips=opts.map(v=>`<button class="chip ${v===k?'active':''}" style="${v===k?'background:var(--dilatasi);border-color:var(--dilatasi);color:#fff':''}" onclick="setDemo('dilatasi','k',${v})">k = ${v}</button>`).join('');
+  return `
+  <span class="eyebrow" style="background:var(--dilatasi-bg); color:#155F52;">Materi · Dilatasi Interaktif</span>
+  <h1 class="page-title">Ubah faktor skalanya, lihat ukurannya berubah!</h1>
+  <div class="demo-controls">${chips}</div>
+  <div class="plane-wrap">
+    ${plane({points:base, image:img, range:6, rays:true, accent:'#2CA592'})}
+    <div>
+      ${coordTable(['A','B','C'], base, img)}
+      <div class="formula-box" style="margin-top:12px;">\\[ [O,\\ ${k}] \\]</div>
+    </div>
+  </div>
+  `;
+}});
+
+/* ---- 25. CONTOH SOAL DILATASI ---- */
+pages.push({section:'concept', title:'Contoh Soal Dilatasi', render:()=>`
+  <span class="eyebrow" style="background:var(--dilatasi-bg); color:#155F52;">Contoh Soal · Dilatasi</span>
+  <h1 class="page-title">Yuk coba selesaikan bareng</h1>
+  <div class="card">
+    <p><strong>Soal:</strong> Titik \\(M(2, -3)\\) didilatasikan terhadap pusat O dengan faktor skala \\(k=3\\). Tentukan bayangan \\(M'\\)!</p>
+    <button class="reveal-btn" onclick="toggleReveal('d1')">💡 Lihat Pembahasan</button>
+    <div id="reveal-d1"></div>
+  </div>
+  ${mcq('concept_d1', "Titik N(4, 6) didilatasikan dengan pusat O dan faktor skala k = 0.5. Bayangannya adalah…", ["N'(8, 12)","N'(2, 3)","N'(-2, -3)","N'(4, 3)"], 1, "k=0.5 berarti diperkecil setengahnya: (4×0.5, 6×0.5) = N'(2, 3).")}
+`, after:(stage)=>{
+  const box = stage.querySelector('#reveal-d1');
+  if(box && revealState['d1']){
+    box.innerHTML = `<div class="reveal-box">
+      <p>x' = k·x = 3 × 2 = <strong>6</strong></p>
+      <p>y' = k·y = 3 × (-3) = <strong>-9</strong></p>
+      <p>Jadi, \\(M'(6,\\ -9)\\).</p>
+    </div>`;
+    if(window.renderMathInElement) renderMathInElement(box);
+  }
+}});
+
+/* ---- 26. RANGKUMAN RUMUS ---- */
+pages.push({section:'concept', title:'Rangkuman Rumus', render:()=>`
+  <span class="eyebrow" style="background:var(--paper-dark); color:var(--ink-soft);">Rangkuman</span>
+  <h1 class="page-title">Cheat-sheet — simpan di catatanmu ya! 📒</h1>
+  <div class="grid-2">
+    <div class="card" style="border-top:4px solid var(--translasi);">
+      <p class="badge" style="background:var(--translasi-bg); color:#7A4F0E;">TRANSLASI</p>
+      <div class="formula-box" style="margin:10px 0 0;">\\[(x,y)\\to(x{+}a,\\,y{+}b)\\]</div>
+    </div>
+    <div class="card" style="border-top:4px solid var(--refleksi);">
+      <p class="badge" style="background:var(--refleksi-bg); color:#443A96;">REFLEKSI</p>
+      <div class="formula-box" style="margin:10px 0 0; font-size:14px;">\\[\\begin{aligned}\\text{sb-}x&:(x,-y)\\\\ \\text{sb-}y&:(-x,y)\\\\ y{=}x&:(y,x)\\end{aligned}\\]</div>
+    </div>
+    <div class="card" style="border-top:4px solid var(--rotasi);">
+      <p class="badge" style="background:var(--rotasi-bg); color:#8C2C22;">ROTASI (pusat O)</p>
+      <div class="formula-box" style="margin:10px 0 0; font-size:14px;">\\[\\begin{aligned}90°&:(-y,x)\\\\ 180°&:(-x,-y)\\\\ 270°&:(y,-x)\\end{aligned}\\]</div>
+    </div>
+    <div class="card" style="border-top:4px solid var(--dilatasi);">
+      <p class="badge" style="background:var(--dilatasi-bg); color:#155F52;">DILATASI</p>
+      <div class="formula-box" style="margin:10px 0 0;">\\[(x,y)\\to(kx,\\,ky)\\]</div>
+    </div>
+  </div>
+`});
+
+/* ---- LATIHAN SOAL 27-32 ---- */
+const latihanQ = [
+  {q:"Titik R(-3, 2) ditranslasikan oleh T(5, -1). Bayangan R' adalah…", opts:["R'(2, 1)","R'(-8, 3)","R'(2, 3)","R'(8, -1)"], correct:0, ex:"x' = -3+5 = 2, y' = 2+(-1) = 1 → R'(2, 1)."},
+  {q:"Titik S(6, -4) dicerminkan terhadap sumbu-x. Bayangannya adalah…", opts:["S'(-6, -4)","S'(6, 4)","S'(-6, 4)","S'(4, -6)"], correct:1, ex:"Cermin sumbu-x: (x,y)→(x,-y), jadi S'(6, 4)."},
+  {q:"Titik T(2, 5) dirotasikan 90° berlawanan arah jarum jam dengan pusat O. Bayangannya adalah…", opts:["T'(5, 2)","T'(-5, 2)","T'(5, -2)","T'(-2, -5)"], correct:1, ex:"Rotasi 90° CCW: (x,y)→(-y,x), jadi T'(-5, 2)."},
+  {q:"Titik U(4, -6) didilatasikan dengan pusat O and k = -0.5. Bayangannya adalah…", opts:["U'(2, -3)","U'(-2, 3)","U'(-2, -3)","U'(2, 3)"], correct:1, ex:"x' = -0.5×4 = -2, y' = -0.5×(-6) = 3 → U'(-2, 3). Karena k negatif, bayangan pindah ke sisi berlawanan pusat."},
+  {q:"Titik V(1, 2) ditranslasikan oleh T(2,3), lalu hasilnya dicerminkan terhadap sumbu-y. Koordinat akhirnya adalah…", opts:["(-3, 5)","(3, 5)","(-3, -5)","(3, -5)"], correct:0, ex:"Translasi dulu: (1+2, 2+3) = (3, 5). Lalu cermin sumbu-y: (-3, 5)."},
+  {q:"Sebuah taman berbentuk segitiga digambar pada denah dengan skala 1:100 (k = 100 dari denah ke ukuran asli, arah dilatasi diperbesar). Jika pada denah panjang salah satu sisinya 4 cm, berapa cm panjang sisi taman yang sebenarnya?", opts:["4 cm","40 cm","400 cm","4000 cm"], correct:2, ex:"4 cm × 100 = 400 cm. Ini contoh dilatasi (perbesaran skala) dalam soal denah/peta."},
+];
+latihanQ.forEach((item,i)=>{
+  pages.push({section:'practice', title:'Latihan '+(i+1), render:()=>{
+    const s = scoreOf('practice');
+    let recap='';
+    if(i===latihanQ.length-1 && qState['practice'+i]){
+      const sFinal = scoreOf('practice');
+      recap = `<div class="card" style="margin-top:18px; border-color:var(--dilatasi);">
+        <p><strong>Skor latihan soal kamu: ${sFinal.correct} / ${latihanQ.length}</strong></p>
+        <p class="small-note">Kerja bagus sudah sampai sejauh ini! Yuk lanjut ke refleksi diri.</p>
+      </div>`;
+    }
+    return `
+    <span class="eyebrow" style="background:var(--rotasi-bg); color:#8C2C22;">Latihan Soal · ${i+1} dari ${latihanQ.length}</span>
+    <h1 class="page-title" style="font-size:20px;">Saatnya uji pemahamanmu!</h1>
+    ${mcq('practice'+i, item.q, item.opts, item.correct, item.ex)}
+    ${recap}
+  `;}});
+});
+
+/* ---- 33. REFLEKSI DIRI ---- */
+pages.push({section:'closing', title:'Refleksi Diri', render:()=>{
+  const items=[['translasi','Translasi (menggeser)'],['refleksi','Refleksi (mencerminkan)'],['rotasi','Rotasi (memutar)'],['dilatasi','Dilatasi (memperbesar/memperkecil)']];
+  const rows = items.map(([k,label])=>`
+    <div class="check-row">
+      <span>${label}</span>
+      <span>
+        <button class="face-btn ${selfCheck[k]==='ok'?'active':''}" onclick="setSelfCheck('${k}','ok')">🙂 Paham</button>
+        <button class="face-btn ${selfCheck[k]==='no'?'active':''}" onclick="setSelfCheck('${k}','no')">🤔 Masih bingung</button>
+      </span>
+    </div>`).join('');
+  const wScore = scoreOf('warmup'), pScore = scoreOf('practice');
+  return `
+  <span class="eyebrow" style="background:var(--paper-dark); color:var(--ink-soft);">Refleksi</span>
+  <h1 class="page-title">Yuk, cek pemahamanmu sendiri</h1>
+  <div class="card">${rows}</div>
+  <h2 class="section-title">Bagian mana yang masih bikin bingung?</h2>
+  <textarea class="journal" placeholder="Tulis di sini, ya... (catatan ini hanya untukmu sendiri, tidak dikirim ke mana pun)" oninput="journalText=this.value"></textarea>
+  <div class="progress-pill">📊 Warm-up: ${wScore.correct}/8 &nbsp;|&nbsp; Latihan: ${pScore.correct}/${latihanQ.length}</div>
+`;}});
+
+/* ---- 34. KESIMPULAN ---- */
+pages.push({section:'closing', title:'Kesimpulan', render:()=>`
+  <span class="eyebrow" style="background:var(--paper-dark); color:var(--ink-soft);">Kesimpulan</span>
+  <h1 class="page-title">Yang perlu kamu ingat</h1>
+  <ul>
+    <li><strong>Transformasi geometri</strong> memindahkan/mengubah posisi atau ukuran bangun tanpa mengubah bentuk dasarnya (kecuali dilatasi).</li>
+    <li><strong>Translasi</strong> menggeser titik: \\((x,y)\\to(x{+}a,y{+}b)\\).</li>
+    <li><strong>Refleksi</strong> mencerminkan titik terhadap suatu garis atau titik.</li>
+    <li><strong>Rotasi</strong> memutar titik terhadap suatu pusat sejauh sudut tertentu.</li>
+    <li><strong>Dilatasi</strong> mengubah ukuran bangun dengan faktor skala \\(k\\): \\((x,y)\\to(kx,ky)\\).</li>
+  </ul>
+  <div class="hero-illustration">
+    <svg viewBox="0 0 320 160" width="100%" style="max-width:320px">
+      <circle cx="160" cy="80" r="30" fill="#211C15" opacity="0.85"/>
+      <text x="160" y="84" text-anchor="middle" fill="#FAF6EC" font-family="Space Grotesk" font-size="11" font-weight="700">Transformasi</text>
+      <line x1="160" y1="50" x2="70" y2="20" stroke="#E39A2D" stroke-width="2"/>
+      <circle cx="60" cy="16" r="16" fill="var(--translasi)"/><text x="60" y="20" text-anchor="middle" font-size="9" fill="#2B1C05" font-family="Plus Jakarta Sans" font-weight="700">Trans.</text>
+      <line x1="190" y1="55" x2="270" y2="20" stroke="#7A6AE0" stroke-width="2"/>
+      <circle cx="272" cy="16" r="16" fill="var(--refleksi)"/><text x="272" y="20" text-anchor="middle" font-size="9" fill="#fff" font-family="Plus Jakarta Sans" font-weight="700">Reflek.</text>
+      <line x1="140" y1="108" x2="60" y2="140" stroke="#E0574B" stroke-width="2"/>
+      <circle cx="52" cy="144" r="16" fill="var(--rotasi)"/><text x="52" y="148" text-anchor="middle" font-size="9" fill="#fff" font-family="Plus Jakarta Sans" font-weight="700">Rotasi</text>
+      <line x1="185" y1="108" x2="265" y2="140" stroke="#2CA592" stroke-width="2"/>
+      <circle cx="270" cy="144" r="16" fill="var(--dilatasi)"/><text x="270" y="148" text-anchor="middle" font-size="9" fill="#fff" font-family="Plus Jakarta Sans" font-weight="700">Dilatasi</text>
+    </svg>
+  </div>
+`});
+
+/* ---- 35. PENUTUP ---- */
+pages.push({section:'closing', title:'Penutup', render:()=>`
+  <div class="center">
+    <div class="hero-illustration">${mascotSVG(110)}</div>
+    <h1 class="page-title">Selamat, kamu sudah menyelesaikan modul ini! 🎉</h1>
+    <div class="card" style="max-width:420px; margin:16px auto;">
+      <p class="small-note">Nama kamu:</p>
+      <input type="text" class="name-input" placeholder="Tulis namamu di sini" oninput="studentName=this.value">
+      <p style="margin-top:14px;">telah menuntaskan modul<br><strong>Transformasi Geometri</strong><br><span class="small-note">Translasi · Refleksi · Rotasi · Dilatasi</span></p>
+    </div>
+    <p class="lead">Teruslah berlatih — semakin sering mencoba soal, transformasi ini akan terasa semakin mudah!</p>
+    <p class="small-note">Terima kasih sudah belajar bersama hari ini. Sampai jumpa di modul berikutnya 👋</p>
+  </div>
+`});
+
+/* ============ RENDER ENGINE ============ */
+let current = 0;
+function render(){
+  const p = pages[current];
+  const stage = document.getElementById('stage');
+  stage.innerHTML = p.render();
+  if(p.after) p.after(stage);
+  if(window.renderMathInElement){
+    renderMathInElement(stage, {delimiters:[
+      {left:'\\[', right:'\\]', display:true},
+      {left:'\\(', right:'\\)', display:false}
+    ]});
+  }
+  document.getElementById('progress-fill').style.width = ((current+1)/pages.length*100)+'%';
+  document.getElementById('page-count').textContent = (current+1)+' / '+pages.length;
+  document.getElementById('topbar-section').textContent = SECTIONS[p.section].label + ' · ' + p.title;
+  document.getElementById('prev-btn').disabled = current===0;
+  document.getElementById('next-btn').disabled = current===pages.length-1;
+  document.getElementById('next-btn').innerHTML = current===pages.length-1 ? 'Selesai ✓' : 'Berikutnya →';
+  document.getElementById('mascot-mini').innerHTML = mascotSVG(40);
+  
+  // Mengarahkan jendela scroll ke atas dengan halus agar transisi halaman terasa nyaman
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  
+  buildTOC();
+}
+function nextPage(){ if(current<pages.length-1){current++; render();} }
+function prevPage(){ if(current>0){current--; render();} }
+function goTo(i){ current=i; render(); toggleTOC(false); }
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') nextPage();
+  if(e.key==='ArrowLeft') prevPage();
+});
+
+document.getElementById('stage-wrap').addEventListener('click', e=>{
+  const btn = e.target.closest('.opt-btn');
+  if(btn && !btn.disabled){
+    const qid=btn.dataset.qid, idx=+btn.dataset.idx, correct=+btn.dataset.correct;
+    if(!qState[qid]){
+      qState[qid]={selected:idx, correct: idx===correct};
+      render();
+    }
+  }
+});
+
+function toggleReveal(key){ revealState[key]=!revealState[key]; render(); }
+function setDemo(topic,key,val){ demoState[topic][key]=val; render(); }
+function setSelfCheck(k,val){ selfCheck[k] = (selfCheck[k]===val) ? null : val; render(); }
+
+function toggleTOC(open){
+  document.getElementById('toc-overlay').classList.toggle('open', open);
+}
+function buildTOC(){
+  const list = document.getElementById('toc-list');
+  list.innerHTML = pages.map((p,i)=>`
+    <div class="toc-item ${i===current?'current':''}" onclick="goTo(${i})">
+      <span class="toc-num">${String(i+1).padStart(2,'0')}</span>
+      <span class="toc-dot" style="background:${SECTIONS[p.section].dot}"></span>
+      <span>${p.title}</span>
+    </div>`).join('');
+}
+
+window.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>
