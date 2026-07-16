@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuis Interaktif — Transformasi Geometri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          display: ['"Space Grotesk"', 'sans-serif'],
+          mono: ['"IBM Plex Mono"', 'monospace'],
+        },
+        colors: {
+          navy: {
+            100: '#E1E4FC',
+            800: '#1E2456',
+            900: '#12163A',
+            950: '#0B0D26',
+          },
+          translasi: '#E39A2D',
+          refleksi: '#7A6AE0',
+          rotasi: '#E0574B',
+          dilatasi: '#2CA592',
+          paper: '#FAF6EC',
+          ink: '#211C15',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body {
+    background:
+      radial-gradient(circle at 15% 10%, rgba(122,106,224,0.15), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(227,154,45,0.12), transparent 45%),
+      linear-gradient(160deg, #12163A, #0B0D26);
+    background-attachment: fixed;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 30px 30px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .formula-box {
+    background: #12163A;
+    color: #FAF6EC;
+    border-radius: 12px;
+    font-size: 15px;
+    overflow-x: auto;
+  }
+  .katex { color: inherit; }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+  }
+</style>
+</head>
+<body class="min-height-screen text-slate-100 flex flex-col justify-between overflow-x-hidden relative p-4 md:p-6">
+
+<div class="relative z-10 w-full max-w-6xl mx-auto flex flex-col gap-6">
+  <!-- Topbar -->
+  <header class="flex flex-col sm:flex-row justify-between items-center bg-navy-800/80 backdrop-blur-md border border-white/10 rounded-2xl p-5 gap-4">
+    <div class="flex items-center gap-4">
+      <div id="mascot-container" class="w-12 h-12 flex-shrink-0">
+        <!-- SVG Mascot -->
+        <svg viewBox="0 0 120 120" class="w-full h-full">
+          <polygon points="60,10 100,70 60,58" fill="#E39A2D"/>
+          <polygon points="60,10 20,70 60,58" fill="#F0BD6C"/>
+          <polygon points="60,58 100,70 66,110 34,110 20,70" fill="#D98429"/>
+          <polygon points="60,58 34,110 20,70" fill="#C97317"/>
+          <polygon points="60,58 66,110 100,70" fill="#F2A93B"/>
+          <polygon points="46,46 54,58 40,58" fill="#211C15" opacity="0.75"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="font-display font-bold text-lg md:text-xl text-paper tracking-wide">Kuis Akbar Transformasi Geometri</h1>
+        <p class="font-mono text-xs text-white/50">Uji Kompetensi 30 Soal Interaktif</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <button onclick="openNavModal()" class="bg-white/10 hover:bg-white/15 border border-white/20 text-paper font-semibold text-sm rounded-xl px-4 py-2.5 flex items-center gap-2 transition-all duration-200">
+        📊 Navigasi Soal
+      </button>
+      <button onclick="restartKuis()" class="bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/30 text-rose-300 font-semibold text-sm rounded-xl px-4 py-2.5 transition-all duration-200">
+        Reset
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace Grid -->
+  <main id="quiz-workspace" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- Left Workspace: Question Panel -->
+    <section class="lg:col-span-7 flex flex-col gap-6">
+      <!-- Question Card -->
+      <div class="bg-navy-800/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 md:p-8 flex flex-col gap-6">
+        <div class="flex justify-between items-center border-b border-white/5 pb-4">
+          <div class="flex items-center gap-3">
+            <span id="category-badge" class="font-mono text-xs font-semibold uppercase px-3 py-1 rounded-full text-navy-950 font-bold">Category</span>
+            <span id="question-index" class="font-mono text-xs text-white/60">Soal 0 dari 30</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="live-timer" class="font-mono text-xs text-white/70">Waktu: 00:00</span>
+          </div>
+        </div>
+
+        <div id="question-text" class="text-lg md:text-xl font-medium leading-relaxed text-paper">
+          <!-- LaTeX Question renders here -->
+        </div>
+
+        <div id="options-container" class="flex flex-col gap-3">
+          <!-- Options list renders here -->
+        </div>
+
+        <!-- Feedback & Explanation Box -->
+        <div id="explanation-box" class="hidden transition-all duration-300">
+          <div class="border-t border-white/10 pt-5 mt-4">
+            <div id="explanation-title" class="flex items-center gap-2 text-sm font-bold mb-2">
+              <!-- Result Icon -->
+            </div>
+            <div id="explanation-text" class="text-sm leading-relaxed text-slate-300 p-4 rounded-xl bg-navy-950/60 border border-white/5">
+              <!-- Explanation text -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Navigation Buttons -->
+      <div class="flex justify-between items-center gap-4">
+        <button id="btn-prev" onclick="prevQuestion()" class="flex-1 bg-white/10 hover:bg-white/15 disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 hover:border-white/20 text-paper font-bold py-3.5 rounded-xl transition-all duration-200">
+          ← Sebelumnya
+        </button>
+        <button id="btn-next" onclick="nextQuestion()" class="flex-1 bg-gradient-to-r from-translasi to-amber-500 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-navy-950 font-extrabold py-3.5 rounded-xl shadow-lg transition-all duration-200">
+          Berikutnya →
+        </button>
+      </div>
+    </section>
+
+    <!-- Right Workspace: Visual Coordinate Plane and Stats Overview -->
+    <section class="lg:col-span-5 flex flex-col gap-6">
+      
+      <!-- Interactive Coordinate Plane Wrapper -->
+      <div class="bg-navy-800/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 flex flex-col gap-4">
+        <div class="flex justify-between items-center">
+          <h2 class="font-display font-semibold text-sm text-paper tracking-wide">Papan Kartesius Pembelajaran</h2>
+          <span class="font-mono text-[10px] text-white/40 uppercase">Skala Otomatis</span>
+        </div>
+
+        <div id="canvas-container" class="w-full flex items-center justify-center bg-white rounded-2xl overflow-hidden shadow-inner p-4 relative" style="aspect-ratio: 1/1;">
+          <!-- SVG Cartesian grid drawn dynamically -->
+          <svg id="coordinate-grid" class="w-full h-full" viewBox="0 0 300 300">
+            <!-- Dynamic Grid Lines & Points go here -->
+          </svg>
+          <!-- Plane Non-Interactive overlay when not available -->
+          <div id="no-grid-overlay" class="absolute inset-0 bg-navy-900/90 flex flex-col items-center justify-center text-center p-6 hidden">
+            <svg class="w-12 h-12 text-white/30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <p class="text-sm font-semibold text-white/80">Grafik Tidak Tersedia</p>
+            <p class="text-xs text-white/50 mt-1">Soal ini berupa teori konsep atau visualisasi non-titik koordinat tunggal.</p>
+          </div>
+        </div>
+
+        <!-- Legend / Key for Grid -->
+        <div id="grid-legend" class="flex justify-center items-center gap-6 text-xs font-mono text-white/60 pt-2 border-t border-white/5">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-slate-800 border-2 border-white"></span>
+            <span>Titik Asal</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="legend-target" class="w-3 h-3 rounded-full bg-translasi border-2 border-white"></span>
+            <span>Bayangan (A')</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Realtime Score & Statistics Dashboard -->
+      <div class="bg-navy-800/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 flex flex-col gap-4">
+        <h2 class="font-display font-semibold text-sm text-paper tracking-wide">Kemajuan Kuis Saat Ini</h2>
+        
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div class="bg-navy-950/40 p-3 rounded-xl border border-white/5">
+            <div id="stat-solved" class="font-mono text-lg font-bold text-paper">0 / 30</div>
+            <div class="text-[10px] text-white/40 uppercase mt-0.5">Terjawab</div>
+          </div>
+          <div class="bg-navy-950/40 p-3 rounded-xl border border-white/5">
+            <div id="stat-correct" class="font-mono text-lg font-bold text-emerald-400">0</div>
+            <div class="text-[10px] text-white/40 uppercase mt-0.5">Benar</div>
+          </div>
+          <div class="bg-navy-950/40 p-3 rounded-xl border border-white/5">
+            <div id="stat-wrong" class="font-mono text-lg font-bold text-rose-400">0</div>
+            <div class="text-[10px] text-white/40 uppercase mt-0.5">Salah</div>
+          </div>
+        </div>
+
+        <div class="w-full bg-white/5 rounded-full h-2.5 overflow-hidden">
+          <div id="bar-progress" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-0 transition-all duration-300"></div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Final Results Page -->
+  <section id="results-workspace" class="hidden bg-navy-800/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 md:p-10 flex flex-col gap-8 max-w-4xl mx-auto w-full">
+    <div class="text-center flex flex-col items-center gap-4">
+      <div class="w-24 h-24 mb-2">
+        <svg viewBox="0 0 120 120" class="w-full h-full animate-bounce">
+          <polygon points="60,10 100,70 60,58" fill="#E39A2D"/>
+          <polygon points="60,10 20,70 60,58" fill="#F0BD6C"/>
+          <polygon points="60,58 100,70 66,110 34,110 20,70" fill="#D98429"/>
+          <polygon points="60,58 34,110 20,70" fill="#C97317"/>
+          <polygon points="60,58 66,110 100,70" fill="#F2A93B"/>
+          <polygon points="46,46 54,58 40,58" fill="#211C15" opacity="0.75"/>
+        </svg>
+      </div>
+      <h2 class="font-display font-bold text-3xl text-paper">Hasil Evaluasi Kuis Kamu</h2>
+      <p id="congrats-text" class="text-slate-300 max-w-xl leading-relaxed">Selamat telah merampungkan 30 Tantangan Transformasi Geometri! Di bawah ini adalah hasil komparasi belajarmu.</p>
+    </div>
+
+    <!-- Stats Matrix -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+      <div class="bg-navy-950/40 p-4 rounded-2xl border border-white/5">
+        <div id="res-score" class="font-display font-extrabold text-3xl md:text-4xl text-amber-400">0</div>
+        <div class="text-xs text-white/50 mt-1">Nilai Akhir</div>
+      </div>
+      <div class="bg-navy-950/40 p-4 rounded-2xl border border-white/5">
+        <div id="res-accuracy" class="font-display font-extrabold text-3xl md:text-4xl text-emerald-400">0%</div>
+        <div class="text-xs text-white/50 mt-1">Akurasi</div>
+      </div>
+      <div class="bg-navy-950/40 p-4 rounded-2xl border border-white/5">
+        <div id="res-correct" class="font-display font-extrabold text-3xl md:text-4xl text-paper">0 / 30</div>
+        <div class="text-xs text-white/50 mt-1">Benar / Total</div>
+      </div>
+      <div class="bg-navy-950/40 p-4 rounded-2xl border border-white/5">
+        <div id="res-time" class="font-display font-extrabold text-3xl md:text-4xl text-teal-300">00:00</div>
+        <div class="text-xs text-white/50 mt-1">Total Waktu</div>
+      </div>
+    </div>
+
+    <!-- Category Performance Charts -->
+    <div class="flex flex-col gap-4">
+      <h3 class="font-display font-semibold text-lg text-paper">Analisis Kekuatan Berdasarkan Topik</h3>
+      <div id="topic-performance-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Topic breakdown items go here -->
+      </div>
+    </div>
+
+    <!-- Final actions -->
+    <div class="flex flex-col sm:flex-row gap-4 border-t border-white/10 pt-8 mt-4">
+      <button onclick="restartKuis()" class="flex-1 bg-gradient-to-r from-translasi to-amber-500 hover:brightness-110 text-navy-950 font-extrabold py-4 rounded-xl shadow-lg transition-all duration-200">
+        Ulangi Kuis Dari Awal
+      </button>
+      <button onclick="viewAnswersHistory()" class="flex-1 bg-white/10 hover:bg-white/15 border border-white/10 text-paper font-bold py-4 rounded-xl transition-all duration-200">
+        Ulas Jawaban & Pembahasan
+      </button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center py-6 text-xs text-white/30 font-mono">
+    &copy; 2026 Modul Transformasi Geometri Interaktif SMP.
+  </footer>
+</div>
+
+<!-- Navigation Drawer / Modal -->
+<div id="nav-modal" class="fixed inset-0 bg-navy-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+  <div class="bg-navy-800 border border-white/10 rounded-2xl max-w-lg w-full p-6 flex flex-col gap-5 shadow-2xl">
+    <div class="flex justify-between items-center border-b border-white/5 pb-3">
+      <h3 class="font-display font-bold text-lg text-paper">Navigasi Lembar Kuis</h3>
+      <button onclick="closeNavModal()" class="text-white/60 hover:text-white/90 font-bold text-lg">&times;</button>
+    </div>
+
+    <p class="text-xs text-white/50 leading-relaxed">Klik salah satu nomor untuk lompat langsung ke pertanyaan. Angka berbingkai kuning merupakan soal aktif Anda.</p>
+
+    <div id="nav-questions-grid" class="grid grid-cols-5 sm:grid-cols-6 gap-2 max-h-60 overflow-y-auto custom-scrollbar p-1">
+      <!-- Generated buttons for questions 1-30 -->
+    </div>
+
+    <div class="flex justify-end gap-3 border-t border-white/5 pt-4 mt-2">
+      <button onclick="closeNavModal()" class="bg-white/10 hover:bg-white/15 border border-white/10 text-paper text-sm font-semibold px-5 py-2.5 rounded-xl">
+        Tutup
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ============ 30 QUESTIONS DATABASE ============ */
+  const QUESTIONS = [
+    {
+      category: "Translasi",
+      text: "Titik $P(2, 5)$ ditranslasikan oleh $T(3, -1)$. Koordinat bayangan titik $P$ adalah...",
+      options: ["$P'(5, 4)$", "$P'(5, 6)$", "$P'(-1, 6)$", "$P'(1, 4)$"],
+      answerIndex: 0,
+      explanation: "Untuk translasi $T(a,b)$, bayangannya ditentukan dengan menjumlahkan koordinat asal dengan vektor translasinya: <br> $P'(x', y') = P(x+a, y+b)$ <br> $x' = 2 + 3 = 5$ <br> $y' = 5 + (-1) = 4$ <br> Jadi, koordinat bayangannya adalah $P'(5, 4)$.",
+      planeData: { points: [[2,5]], image: [[5,4]], accent: "#E39A2D", range: 7 }
+    },
+    {
+      category: "Translasi",
+      text: "Titik $Q(-1, 4)$ ditranslasikan oleh $T(a, b)$ menghasilkan bayangan $Q'(2, 1)$. Nilai $a$ dan $b$ berturut-turut adalah...",
+      options: ["$3$ dan $3$", "$3$ dan $-3$", "$-3$ dan $3$", "$-3$ dan $-3$"],
+      answerIndex: 1,
+      explanation: "Berdasarkan prinsip translasi: $Q'(x', y') = Q(x+a, y+b)$ <br> Untuk $x$: $2 = -1 + a \\Rightarrow a = 2 + 1 = 3$ <br> Untuk $y$: $1 = 4 + b \\Rightarrow b = 1 - 4 = -3$ <br> Nilai $a$ dan $b$ berturut-turut adalah $3$ dan $-3$.",
+      planeData: { points: [[-1,4]], image: [[2,1]], accent: "#E39A2D", range: 6 }
+    },
+    {
+      category: "Translasi",
+      text: "Titik $R(3, -2)$ ditranslasikan berturut-turut oleh $T_1(1, 4)$ kemudian oleh $T_2(-2, 3)$. Koordinat bayangan akhir dari titik $R$ adalah...",
+      options: ["$R'(2, 5)$", "$R'(4, 2)$", "$R'(6, 5)$", "$R'(2, -5)$"],
+      answerIndex: 0,
+      explanation: "Komposisi translasi berturut-turut dapat dihitung dengan menjumlahkan seluruh pergeseran: <br> $x'' = 3 + 1 + (-2) = 2$ <br> $y'' = -2 + 4 + 3 = 5$ <br> Koordinat akhir bayangan titik $R$ adalah $R'(2, 5)$.",
+      planeData: { points: [[3,-2]], image: [[2,5]], accent: "#E39A2D", range: 6 }
+    },
+    {
+      category: "Translasi",
+      text: "Titik $S$ menghasilkan bayangan $S'(5, -2)$ setelah ditranslasikan oleh $T(-3, 4)$. Koordinat titik asal $S$ adalah...",
+      options: ["$S(2, 2)$", "$S(8, -6)$", "$S(8, 2)$", "$S(2, -6)$"],
+      answerIndex: 1,
+      explanation: "Untuk mencari titik asal, kita balik operasinya (dikurangi): <br> $x = x' - a = 5 - (-3) = 8$ <br> $y = y' - b = -2 - 4 = -6$ <br> Jadi, koordinat asal titik tersebut adalah $S(8, -6)$.",
+      planeData: { points: [[8,-6]], image: [[5,-2]], accent: "#E39A2D", range: 10 }
+    },
+    {
+      category: "Translasi",
+      text: "Garis $y = 2x + 3$ digeser oleh translasi $T(0, 2)$. Persamaan garis bayangannya adalah...",
+      options: ["$y = 2x + 1$", "$y = 2x + 5$", "$y = 2x + 3$", "$y = 4x + 5$"],
+      answerIndex: 1,
+      explanation: "Translasi kurva/garis oleh $T(a,b)$ dihitung dengan substitusi: $x = x' - a$ dan $y = y' - b$ <br> Di sini $a=0, b=2$. Maka $x = x'$ dan $y = y' - 2$. <br> Substitusi ke garis: $(y' - 2) = 2(x') + 3 \\Rightarrow y' = 2x' + 5$. <br> Persamaan bayangan garisnya adalah $y = 2x + 5$.",
+      planeData: null // Non-point based translation
+    },
+    {
+      category: "Translasi",
+      text: "Segitiga $ABC$ dengan $A(1, 2)$, $B(3, 1)$, dan $C(2, 4)$ ditranslasikan oleh $T(2, -3)$. Koordinat bayangan untuk titik sudut $C$ adalah...",
+      options: ["$C'(4, 1)$", "$C'(0, 1)$", "$C'(4, 7)$", "$C'(0, 7)$"],
+      answerIndex: 0,
+      explanation: "Kita hanya perlu memproses titik $C(2, 4)$ dengan $T(2, -3)$: <br> $x_c' = 2 + 2 = 4$ <br> $y_c' = 4 + (-3) = 1$ <br> Maka bayangan titik sudut $C$ adalah $C'(4, 1)$.",
+      planeData: { points: [[1,2], [3,1], [2,4]], image: [[3,-1], [5,-2], [4,1]], accent: "#E39A2D", range: 6 }
+    },
+    {
+      category: "Translasi",
+      text: "Jika titik $A(x, y)$ ditranslasikan oleh $T(-2, 5)$ menghasilkan bayangan $A'(1, 3)$, maka nilai dari $x + y$ adalah...",
+      options: ["$1$", "$2$", "$3$", "$4$"],
+      answerIndex: 0,
+      explanation: "Mencari nilai $x$ dan $y$: <br> $x' = x + a \\Rightarrow 1 = x - 2 \\Rightarrow x = 3$ <br> $y' = y + b \\Rightarrow 3 = y + 5 \\Rightarrow y = -2$ <br> Maka, $x + y = 3 + (-2) = 1$.",
+      planeData: { points: [[3,-2]], image: [[1,3]], accent: "#E39A2D", range: 6 }
+    },
+    {
+      category: "Refleksi",
+      text: "Hasil pencerminan titik $A(4, -3)$ terhadap sumbu-x adalah...",
+      options: ["$A'(-4, -3)$", "$A'(4, 3)$", "$A'(-4, 3)$", "$A'(3, -4)$"],
+      answerIndex: 1,
+      explanation: "Pencerminan terhadap sumbu-x membalik tanda ordinat $y$, sementara absis $x$ tetap: <br> $(x, y) \\xrightarrow{\\text{Sumbu-x}} (x, -y)$ <br> Bayangan dari $(4, -3)$ adalah $(4, -(-3)) = A'(4, 3)$.",
+      planeData: { points: [[4,-3]], image: [[4,3]], accent: "#7A6AE0", mirror: "x", range: 6 }
+    },
+    {
+      category: "Refleksi",
+      text: "Hasil pencerminan titik $B(-2, 7)$ terhadap sumbu-y adalah...",
+      options: ["$B'(2, 7)$", "$B'(-2, -7)$", "$B'(2, -7)$", "$B'(7, -2)$"],
+      answerIndex: 0,
+      explanation: "Pencerminan terhadap sumbu-y membalik tanda absis $x$, sementara ordinat $y$ tetap: <br> $(x, y) \\xrightarrow{\\text{Sumbu-y}} (-x, y)$ <br> Bayangan dari $(-2, 7)$ adalah $(-(-2), 7) = B'(2, 7)$.",
+      planeData: { points: [[-2,7]], image: [[2,7]], accent: "#7A6AE0", mirror: "y", range: 9 }
+    },
+    {
+      category: "Refleksi",
+      text: "Titik $C(5, 1)$ dicerminkan terhadap garis $y = x$. Koordinat bayangan titik $C$ adalah...",
+      options: ["$C'(-5, 1)$", "$C'(5, -1)$", "$C'(1, 5)$", "$C'(-1, -5)$"],
+      answerIndex: 2,
+      explanation: "Pencerminan terhadap garis $y = x$ menukar posisi nilai $x$ dan $y$: <br> $(x, y) \\xrightarrow{y = x} (y, x)$ <br> Bayangan dari titik $C(5, 1)$ adalah $C'(1, 5)$.",
+      planeData: { points: [[5,1]], image: [[1,5]], accent: "#7A6AE0", mirror: "yx", range: 7 }
+    },
+    {
+      category: "Refleksi",
+      text: "Titik $D(-3, -4)$ dicerminkan terhadap garis $y = -x$. Koordinat bayangan titik $D$ adalah...",
+      options: ["$D'(4, 3)$", "$D'(-4, -3)$", "$D'(3, 4)$", "$D'(-3, 4)$"],
+      answerIndex: 0,
+      explanation: "Pencerminan terhadap garis $y = -x$ menukar posisi sekaligus membalikkan tanda nilai $x$ dan $y$: <br> $(x, y) \\xrightarrow{y = -x} (-y, -x)$ <br> Bayangan dari titik $D(-3, -4)$ adalah $D'(-(-4), -(-3)) = D'(4, 3)$.",
+      planeData: { points: [[-3,-4]], image: [[4,3]], accent: "#7A6AE0", mirror: "y-x", range: 6 }
+    },
+    {
+      category: "Refleksi",
+      text: "Hasil pencerminan titik $E(2, 6)$ terhadap titik asal $O(0,0)$ adalah...",
+      options: ["$E'(-2, 6)$", "$E'(2, -6)$", "$E'(-2, -6)$", "$E'(6, 2)$"],
+      answerIndex: 2,
+      explanation: "Pencerminan terhadap titik pusat asal $O(0,0)$ membalik tanda kedua absis dan ordinat: <br> $(x, y) \\xrightarrow{O(0,0)} (-x, -y)$ <br> Bayangan dari titik $E(2, 6)$ adalah $E'(-2, -6)$.",
+      planeData: { points: [[2,6]], image: [[-2,-6]], accent: "#7A6AE0", mirror: "o", range: 8 }
+    },
+    {
+      category: "Refleksi",
+      text: "Titik $F(1, 3)$ dicerminkan terhadap garis vertikal $x = 3$. Koordinat bayangan titik $F$ adalah...",
+      options: ["$F'(5, 3)$", "$F'(2, 3)$", "$F'(1, 5)$", "$F'(4, 3)$"],
+      answerIndex: 0,
+      explanation: "Pencerminan terhadap garis vertikal $x = h$: <br> $(x, y) \\xrightarrow{x = h} (2h - x, y)$ <br> Dengan $h=3$: <br> $x' = 2(3) - 1 = 6 - 1 = 5$ <br> $y' = 3$ (tetap) <br> Maka koordinat bayangannya adalah $F'(5, 3)$.",
+      planeData: { points: [[1,3]], image: [[5,3]], accent: "#7A6AE0", range: 7 }
+    },
+    {
+      category: "Refleksi",
+      text: "Titik $G(-2, 5)$ dicerminkan terhadap garis horizontal $y = 2$. Koordinat bayangan titik $G$ adalah...",
+      options: ["$G'(-2, -1)$", "$G'(-2, -3)$", "$G'(6, 5)$", "$G'(-2, 1)$"],
+      answerIndex: 0,
+      explanation: "Pencerminan terhadap garis horizontal $y = k$: <br> $(x, y) \\xrightarrow{y = k} (x, 2k - y)$ <br> Dengan $k=2$: <br> $x' = -2$ (tetap) <br> $y' = 2(2) - 5 = 4 - 5 = -1$ <br> Maka koordinat bayangannya adalah $G'(-2, -1)$.",
+      planeData: { points: [[-2,5]], image: [[-2,-1]], accent: "#7A6AE0", range: 7 }
+    },
+    {
+      category: "Rotasi",
+      text: "Titik $P(3, 4)$ diputar sejauh $90^\\circ$ berlawanan arah jarum jam dengan pusat $O(0,0)$. Koordinat bayangan titik $P$ adalah...",
+      options: ["$P'(-4, 3)$", "$P'(4, -3)$", "$P'(-3, 4)$", "$P'(-4, -3)$"],
+      answerIndex: 0,
+      explanation: "Rotasi sejauh $90^\\circ$ berlawanan arah jarum jam (CCW) mengubah koordinat dengan rumus: <br> $(x, y) \\xrightarrow{R[O, 90^\\circ]} (-y, x)$ <br> Dengan demikian, bayangan dari $P(3, 4)$ adalah $P'(-4, 3)$.",
+      planeData: { points: [[3,4]], image: [[-4,3]], accent: "#E0574B", range: 6 }
+    },
+    {
+      category: "Rotasi",
+      text: "Jika titik $Q(-2, 5)$ diputar sejauh $180^\\circ$ dengan pusat $O(0,0)$, maka koordinat bayangannya adalah...",
+      options: ["$Q'(2, -5)$", "$Q'(5, -2)$", "$Q'(-5, 2)$", "$Q'(-2, -5)$"],
+      answerIndex: 0,
+      explanation: "Rotasi sejauh $180^\\circ$ (baik searah maupun berlawanan arah jarum jam) memiliki efek yang sama dengan pencerminan terhadap titik asal: <br> $(x, y) \\xrightarrow{R[O, 180^\\circ]} (-x, -y)$ <br> Bayangan dari $Q(-2, 5)$ adalah $Q'(2, -5)$.",
+      planeData: { points: [[-2,5]], image: [[2,-5]], accent: "#E0574B", range: 7 }
+    },
+    {
+      category: "Rotasi",
+      text: "Titik $R(6, -1)$ dirotasikan sejauh $270^\\circ$ berlawanan arah jarum jam dengan pusat $O(0,0)$. Koordinat bayangan titik $R$ adalah...",
+      options: ["$R'(-1, -6)$", "$R'(1, 6)$", "$R'(1, -6)$", "$R'(-1, 6)$"],
+      answerIndex: 0,
+      explanation: "Rotasi $270^\\circ$ berlawanan arah jarum jam setara dengan rotasi $-90^\\circ$ (searah jarum jam): <br> $(x, y) \\xrightarrow{R[O, 270^\\circ]} (y, -x)$ <br> Bayangan dari $R(6, -1)$ adalah $R'(-1, -(6)) = R'(-1, -6)$.",
+      planeData: { points: [[6,-1]], image: [[-1,-6]], accent: "#E0574B", range: 8 }
+    },
+    {
+      category: "Rotasi",
+      text: "Titik $S(1, -3)$ dirotasikan sejauh $90^\\circ$ searah jarum jam dengan pusat $O(0,0)$. Koordinat bayangan titik $S$ adalah...",
+      options: ["$S'(-3, -1)$", "$S'(3, 1)$", "$S'(3, -1)$", "$S'(-3, 1)$"],
+      answerIndex: 0,
+      explanation: "Rotasi sejauh $90^\\circ$ searah jarum jam (setara dengan $-90^\\circ$ atau $270^\\circ$ CCW) menggunakan aturan: <br> $(x, y) \\xrightarrow{R[O, -90^\\circ]} (y, -x)$ <br> Maka bayangan dari $S(1, -3)$ adalah $S'(-3, -1)$.",
+      planeData: { points: [[1,-3]], image: [[-3,-1]], accent: "#E0574B", range: 5 }
+    },
+    {
+      category: "Rotasi",
+      text: "Dalam konsep rotasi geometri, arah putaran yang bernilai positif adalah arah...",
+      options: ["Searah jarum jam", "Berlawanan arah jarum jam", "Menuju ke sumbu-x", "Menuju ke sumbu-y"],
+      answerIndex: 1,
+      explanation: "Secara standar kesepakatan matematika kartesius, sudut bernilai **positif** didefinisikan untuk putaran yang **berlawanan arah jarum jam (counter-clockwise)**. Sudut bernilai negatif untuk putaran searah jarum jam.",
+      planeData: null
+    },
+    {
+      category: "Rotasi",
+      text: "Titik $A(2, 1)$ diputar sejauh $90^\\circ$ berlawanan arah jarum jam, lalu diputar lagi sejauh $90^\\circ$ berlawanan arah jarum jam dengan pusat $O(0,0)$. Koordinat bayangan akhir adalah...",
+      options: ["$A'(2, -1)$", "$A'(-2, -1)$", "$A'(-2, 1)$", "$A'(1, 2)$"],
+      answerIndex: 1,
+      explanation: "Dua rotasi beruntun sebesar $90^\\circ$ dengan arah yang sama menghasilkan total rotasi sebesar: <br> $90^\\circ + 90^\\circ = 180^\\circ$ <br> Rumus rotasi $180^\\circ$ adalah $(x, y) \\to (-x, -y)$. <br> Maka bayangan akhirnya adalah $A'(-2, -1)$.",
+      planeData: { points: [[2,1]], image: [[-2,-1]], accent: "#E0574B", range: 4 }
+    },
+    {
+      category: "Rotasi",
+      text: "Titik $B(4, 2)$ dirotasikan sejauh $360^\\circ$ dengan pusat $O(0,0)$. Koordinat bayangan titik $B$ adalah...",
+      options: ["$B'(-4, -2)$", "$B'(2, 4)$", "$B'(4, 2)$", "$B'(-4, 2)$"],
+      answerIndex: 2,
+      explanation: "Rotasi sejauh $360^\\circ$ (satu putaran penuh) mengembalikan posisi titik ke posisi koordinat asalnya: <br> $(x, y) \\xrightarrow{R[O, 360^\\circ]} (x, y)$ <br> Jadi bayangannya tetap sama, yaitu $B'(4, 2)$.",
+      planeData: { points: [[4,2]], image: [[4,2]], accent: "#E0574B", range: 6 }
+    },
+    {
+      category: "Dilatasi",
+      text: "Titik $A(2, 3)$ didilatasikan dengan pusat $O(0,0)$ dan faktor skala $k = 3$. Koordinat bayangan titik $A$ adalah...",
+      options: ["$A'(6, 9)$", "$A'(5, 6)$", "$A'(6, 3)$", "$A'(2, 9)$"],
+      answerIndex: 0,
+      explanation: "Dilatasi terhadap pusat asal $O(0,0)$ dilakukan dengan mengalikan setiap koordinat dengan faktor skala $k$: <br> $(x, y) \\xrightarrow{[O, k]} (kx, ky)$ <br> $x' = 3 \\times 2 = 6$ <br> $y' = 3 \\times 3 = 9$ <br> Jadi, koordinat bayangannya adalah $A'(6, 9)$.",
+      planeData: { points: [[2,3]], image: [[6,9]], accent: "#2CA592", range: 10 }
+    },
+    {
+      category: "Dilatasi",
+      text: "Titik $B(-4, 8)$ didilatasikan dengan pusat $O(0,0)$ dan faktor skala $k = 0.5$. Koordinat bayangan titik $B$ adalah...",
+      options: ["$B'(-8, 16)$", "$B'(-2, 4)$", "$B'(2, -4)$", "$B'(-2, 8)$"],
+      answerIndex: 1,
+      explanation: "Mengalikan dengan faktor skala pecahan $k = 0.5$ (diperkecil): <br> $x' = 0.5 \\times (-4) = -2$ <br> $y' = 0.5 \\times 8 = 4$ <br> Jadi, koordinat bayangannya adalah $B'(-2, 4)$.",
+      planeData: { points: [[-4,8]], image: [[-2,4]], accent: "#2CA592", range: 10 }
+    },
+    {
+      category: "Dilatasi",
+      text: "Titik $C(3, -2)$ didilatasikan dengan pusat $O(0,0)$ dan faktor skala negatif $k = -2$. Koordinat bayangan titik $C$ adalah...",
+      options: ["$C'(-6, 4)$", "$C'(6, -4)$", "$C'(-6, -4)$", "$C'(1, 0)$"],
+      answerIndex: 0,
+      explanation: "Dilatasi dengan skala negatif mengalikan nilai absis dan ordinat sekaligus memutar arahnya $180^\\circ$ dari titik pusat: <br> $x' = -2 \\times 3 = -6$ <br> $y' = -2 \\times (-2) = 4$ <br> Maka, koordinat bayangan barunya adalah $C'(-6, 4)$.",
+      planeData: { points: [[3,-2]], image: [[-6,4]], accent: "#2CA592", range: 8 }
+    },
+    {
+      category: "Dilatasi",
+      text: "Titik $D(2, -5)$ didilatasikan dengan pusat $O(0,0)$ menghasilkan bayangan $D'(-6, 15)$. Faktor skala dilatasi tersebut adalah...",
+      options: ["$3$", "$-3$", "$0.3$", "$-0.3$"],
+      answerIndex: 1,
+      explanation: "Faktor skala $k$ ditentukan melalui perbandingan koordinat bayangan dengan koordinat asal: <br> $x' = k \\times x \\Rightarrow -6 = k \\times 2 \\Rightarrow k = -3$ <br> Kita juga bisa verifikasi dengan $y$: $15 = k \\times (-5) \\Rightarrow k = -3$. <br> Jadi, faktor skalanya adalah $-3$.",
+      planeData: { points: [[2,-5]], image: [[-6,15]], accent: "#2CA592", range: 17 }
+    },
+    {
+      category: "Dilatasi",
+      text: "Sebuah persegi memiliki luas $9\\text{ cm}^2$. Jika persegi tersebut didilatasikan dengan faktor skala $k = 2$, maka luas persegi yang baru adalah...",
+      options: ["$18\\text{ cm}^2$", "$36\\text{ cm}^2$", "$27\\text{ cm}^2$", "$81\\text{ cm}^2$"],
+      answerIndex: 1,
+      explanation: "Jika suatu bangun datar dengan luas $L$ didilatasikan dengan faktor skala $k$, maka luas bangun baru ($L'$) adalah: <br> $L' = k^2 \\times L$ <br> $L' = 2^2 \\times 9 = 4 \\times 9 = 36\\text{ cm}^2$.",
+      planeData: null
+    },
+    {
+      category: "Komposisi",
+      text: "Titik $P(1, 2)$ dicerminkan terhadap sumbu-y, kemudian ditranslasikan oleh $T(3, 4)$. Koordinat bayangan akhir dari titik $P$ adalah...",
+      options: ["$P'(2, 6)$", "$P'(4, 6)$", "$P'(-2, 6)$", "$P'(2, -2)$"],
+      answerIndex: 0,
+      explanation: "Langkah 1 (Refleksi sumbu-y): <br> $P(1, 2) \\to P'(-1, 2)$ <br> Langkah 2 (Translasi $T(3, 4)$): <br> $P'' = P'(-1+3, 2+4) = P''(2, 6)$. <br> Jadi, koordinat akhir adalah $P'(2, 6)$.",
+      planeData: { points: [[1,2]], image: [[2,6]], accent: "#7A6AE0", range: 7 }
+    },
+    {
+      category: "Komposisi",
+      text: "Titik $Q(2, -1)$ ditranslasikan oleh $T(-1, 3)$, kemudian dirotasikan sejauh $90^\\circ$ berlawanan arah jarum jam dengan pusat $O(0,0)$. Koordinat bayangan akhirnya adalah...",
+      options: ["$Q'(-2, 1)$", "$Q'(1, 2)$", "$Q'(-1, 2)$", "$Q'(2, 1)$"],
+      answerIndex: 0,
+      explanation: "Langkah 1 (Translasi $T(-1, 3)$): <br> $Q' = Q(2 + (-1), -1 + 3) = Q'(1, 2)$ <br> Langkah 2 (Rotasi $90^\\circ$ CCW): <br> $(x', y') \\to (-y', x')$ <br> Bayangan akhir dari $(1, 2)$ adalah $Q''(-2, 1)$.",
+      planeData: { points: [[2,-1]], image: [[-2,1]], accent: "#E0574B", range: 5 }
+    },
+    {
+      category: "Komposisi",
+      text: "Titik $R(4, 2)$ didilatasikan dengan pusat $O(0,0)$ dan faktor skala $k = 2$, kemudian dicerminkan terhadap garis $y = x$. Koordinat bayangan akhir dari titik $R$ adalah...",
+      options: ["$R'(4, 8)$", "$R'(8, 4)$", "$R'(-8, -4)$", "$R'(-4, -8)$"],
+      answerIndex: 0,
+      explanation: "Langkah 1 (Dilatasi $[O, 2]$): <br> $R' = R(2 \\times 4, 2 \\times 2) = R'(8, 4)$ <br> Langkah 2 (Refleksi garis $y = x$): <br> $(x, y) \\to (y, x)$ <br> Bayangan dari $(8, 4)$ adalah $R''(4, 8)$.",
+      planeData: { points: [[4,2]], image: [[4,8]], accent: "#2CA592", range: 10 }
+    },
+    {
+      category: "Komposisi",
+      text: "Seorang karakter game berada di koordinat $(1, -2)$. Karakter tersebut bergerak $3$ langkah ke kanan, lalu meloncat ke atas sejauh $5$ satuan. Posisi akhir karakter tersebut dalam bentuk koordinat adalah...",
+      options: ["$(4, 3)$", "$(4, -7)$", "$(-2, 3)$", "$(-2, -7)$"],
+      answerIndex: 0,
+      explanation: "Gerakan ke kanan sejauh $3$ satuan dan meloncat ke atas sejauh $5$ satuan setara dengan translasi $T(3, 5)$: <br> Posisi akhir = $(1 + 3, -2 + 5) = (4, 3)$.",
+      planeData: { points: [[1,-2]], image: [[4,3]], accent: "#E39A2D", range: 6 }
+    }
+  ];
+
+  /* ============ GLOBAL APP STATE ============ */
+  let currentIdx = 0;
+  let score = 0;
+  let userAnswers = Array(QUESTIONS.length).fill(null); // stores index of selected answer
+  let quizStartTime = Date.now();
+  let timerInterval = null;
+
+  /* ============ INITIALIZE ============ */
+  window.addEventListener('DOMContentLoaded', () => {
+    // Check local storage for existing session
+    const saved = localStorage.getItem('geo_quiz_state_v1');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        userAnswers = data.answers;
+        currentIdx = data.currentIdx || 0;
+        quizStartTime = data.startTime || Date.now();
+      } catch (e) {
+        console.error("Gagal memuat sesi simpanan.", e);
+      }
+    }
+    
+    startTimer();
+    renderQuestion();
+    renderNavigationGrid();
+    updateStats();
+  });
+
+  /* ============ TIME TIMER ============ */
+  function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - quizStartTime) / 1000);
+      const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const seconds = String(elapsed % 60).padStart(2, '0');
+      document.getElementById('live-timer').textContent = `Waktu: ${minutes}:${seconds}`;
+    }, 1000);
+  }
+
+  /* ============ RENDER QUESTION ============ */
+  function renderQuestion() {
+    const q = QUESTIONS[currentIdx];
+    
+    // Set Question Progress Meta
+    const indexSpan = document.getElementById('question-index');
+    indexSpan.textContent = `Soal ${currentIdx + 1} dari ${QUESTIONS.length}`;
+
+    // Set Category Color Theme Badge
+    const badge = document.getElementById('category-badge');
+    badge.textContent = q.category;
+    badge.className = "font-mono text-xs font-bold uppercase px-3 py-1 rounded-full text-navy-950";
+    if (q.category === "Translasi") badge.classList.add('bg-translasi');
+    else if (q.category === "Refleksi") badge.classList.add('bg-refleksi', 'text-white');
+    else if (q.category === "Rotasi") badge.classList.add('bg-rotasi', 'text-white');
+    else if (q.category === "Dilatasi") badge.classList.add('bg-dilatasi', 'text-white');
+    else badge.classList.add('bg-indigo-400', 'text-white'); // Komposisi / Campuran
+
+    // Render Question Text
+    const qTextContainer = document.getElementById('question-text');
+    qTextContainer.innerHTML = q.text;
+
+    // Render Multiple Choice Buttons
+    const optionsContainer = document.getElementById('options-container');
+    optionsContainer.innerHTML = '';
+
+    const answered = userAnswers[currentIdx] !== null;
+    const selectedAns = userAnswers[currentIdx];
+
+    q.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = "w-full text-left bg-white/5 border border-white/10 hover:border-white/20 text-paper font-sans text-sm md:text-base rounded-xl px-5 py-3.5 transition-all duration-150 flex items-center justify-between";
+      btn.innerHTML = `<span>${String.fromCharCode(65 + idx)}. &nbsp; ${opt}</span>`;
+      
+      if (!answered) {
+        btn.onclick = () => selectAnswer(idx);
+      } else {
+        btn.classList.add('cursor-default');
+        // Visual validation states
+        if (idx === q.answerIndex) {
+          // This is the correct answer
+          btn.classList.remove('bg-white/5', 'border-white/10');
+          btn.classList.add('bg-emerald-500/20', 'border-emerald-500/40', 'font-semibold', 'text-emerald-300');
+          btn.innerHTML += `<span class="text-emerald-400 text-sm">✓ Benar</span>`;
+        } else if (idx === selectedAns) {
+          // This was the user's incorrect choice
+          btn.classList.remove('bg-white/5', 'border-white/10');
+          btn.classList.add('bg-rose-500/20', 'border-rose-500/40', 'text-rose-300');
+          btn.innerHTML += `<span class="text-rose-400 text-sm">✗ Dipilih</span>`;
+        } else {
+          // Unselected incorrect answers
+          btn.classList.add('opacity-40');
+        }
+      }
+      optionsContainer.appendChild(btn);
+    });
+
+    // Handle Explanation Panel and Canvas Visuals
+    const explainBox = document.getElementById('explanation-box');
+    if (answered) {
+      explainBox.classList.remove('hidden');
+      const isCorrect = selectedAns === q.answerIndex;
+      
+      const titleBox = document.getElementById('explanation-title');
+      const textBox = document.getElementById('explanation-text');
+      
+      if (isCorrect) {
+        titleBox.innerHTML = `<span class="text-emerald-400 flex items-center gap-1.5">🎉 Jawaban Kamu Tepat</span>`;
+        titleBox.className = "text-emerald-400 flex items-center gap-1.5 text-sm font-bold mb-2";
+      } else {
+        titleBox.innerHTML = `<span class="text-rose-400 flex items-center gap-1.5">⚠️ Belum Tepat</span>`;
+        titleBox.className = "text-rose-400 flex items-center gap-1.5 text-sm font-bold mb-2";
+      }
+      textBox.innerHTML = q.explanation;
+    } else {
+      explainBox.classList.add('hidden');
+    }
+
+    // Prev / Next State Navigation Controls
+    document.getElementById('btn-prev').disabled = currentIdx === 0;
+    const btnNext = document.getElementById('btn-next');
+    if (currentIdx === QUESTIONS.length - 1) {
+      btnNext.textContent = answered ? "Lihat Hasil Kuis" : "Selesaikan Kuis";
+    } else {
+      btnNext.textContent = "Berikutnya →";
+    }
+
+    // Draw Coordinate Plane
+    drawCoordinatePlane(q.planeData);
+
+    // LaTeX Render Trigger
+    if (window.renderMathInElement) {
+      renderMathInElement(document.getElementById('quiz-workspace'), {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "$", right: "$", display: false }
+        ]
+      });
+    }
+
+    // Auto-scroll screen top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    saveSession();
+  }
+
+  /* ============ SELECT ANSWER ============ */
+  function selectAnswer(ansIndex) {
+    if (userAnswers[currentIdx] !== null) return; // Answer already submitted
+    userAnswers[currentIdx] = ansIndex;
+    renderQuestion();
+    updateStats();
+    renderNavigationGrid();
+  }
+
+  /* ============ NEXT / PREV NAVIGATION ============ */
+  function nextQuestion() {
+    if (currentIdx === QUESTIONS.length - 1) {
+      // End of quiz, show final result
+      showResults();
+    } else {
+      currentIdx++;
+      renderQuestion();
+    }
+  }
+
+  function prevQuestion() {
+    if (currentIdx > 0) {
+      currentIdx--;
+      renderQuestion();
+    }
+  }
+
+  function jumpToQuestion(idx) {
+    currentIdx = idx;
+    renderQuestion();
+    closeNavModal();
+  }
+
+  /* ============ RESTART / RESET ============ */
+  function restartKuis() {
+    if (confirm("Apakah Anda yakin ingin mengulang kuis dari awal? Semua kemajuan saat ini akan dihapus.")) {
+      userAnswers = Array(QUESTIONS.length).fill(null);
+      currentIdx = 0;
+      quizStartTime = Date.now();
+      localStorage.removeItem('geo_quiz_state_v1');
+      
+      document.getElementById('quiz-workspace').classList.remove('hidden');
+      document.getElementById('results-workspace').classList.add('hidden');
+      
+      startTimer();
+      renderQuestion();
+      renderNavigationGrid();
+      updateStats();
+    }
+  }
+
+  function saveSession() {
+    const data = {
+      answers: userAnswers,
+      currentIdx: currentIdx,
+      startTime: quizStartTime
+    };
+    localStorage.setItem('geo_quiz_state_v1', JSON.stringify(data));
+  }
+
+  /* ============ UPDATE DASHBOARD STATS ============ */
+  function updateStats() {
+    let solved = 0;
+    let correct = 0;
+    let wrong = 0;
+
+    userAnswers.forEach((ans, i) => {
+      if (ans !== null) {
+        solved++;
+        if (ans === QUESTIONS[i].answerIndex) {
+          correct++;
+        } else {
+          wrong++;
+        }
+      }
+    });
+
+    document.getElementById('stat-solved').textContent = `${solved} / ${QUESTIONS.length}`;
+    document.getElementById('stat-correct').textContent = correct;
+    document.getElementById('stat-wrong').textContent = wrong;
+
+    const percentage = (solved / QUESTIONS.length) * 100;
+    document.getElementById('bar-progress').style.width = `${percentage}%`;
+  }
+
+  /* ============ CARTESIAN PLANE DRAWING LOGIC ============ */
+  function drawCoordinatePlane(data) {
+    const svg = document.getElementById('coordinate-grid');
+    const overlay = document.getElementById('no-grid-overlay');
+    const legendTarget = document.getElementById('legend-target');
+    
+    if (!data) {
+      overlay.classList.remove('hidden');
+      svg.innerHTML = '';
+      return;
+    }
+    overlay.classList.add('hidden');
+
+    const width = 300;
+    const height = 300;
+    const padding = 25;
+    const range = data.range || 6;
+    
+    svg.innerHTML = ''; // Clear previous elements
+
+    // Scale calculation helper functions
+    const scaleX = (x) => padding + ((x + range) * (width - 2 * padding)) / (2 * range);
+    const scaleY = (y) => padding + ((range - y) * (height - 2 * padding)) / (2 * range);
+
+    // Color theme definition
+    const axisColor = "#1e293b";
+    const gridColor = "#f1f5f9";
+    const primaryColor = data.accent || "#7a6ae0"; // Mirror or transformation category theme accent
+
+    // Set SVG legend target dot theme
+    legendTarget.style.backgroundColor = primaryColor;
+
+    // Draw Grid Lines (ticks/minor axes)
+    let gridLinesHtml = '';
+    for (let i = -range; i <= range; i++) {
+      if (i === 0) continue; // Skip principal axes
+      
+      const xPos = scaleX(i);
+      const yPos = scaleY(i);
+
+      // Vertical grids
+      gridLinesHtml += `<line x1="${xPos}" y1="${padding}" x2="${xPos}" y2="${height - padding}" stroke="${gridColor}" stroke-width="1" />`;
+      // Horizontal grids
+      gridLinesHtml += `<line x1="${padding}" y1="${yPos}" x2="${width - padding}" y2="${yPos}" stroke="${gridColor}" stroke-width="1" />`;
+
+      // Draw Grid labels
+      gridLinesHtml += `<text x="${xPos}" y="${scaleY(0) + 12}" font-size="7" font-family="monospace" text-anchor="middle" fill="#94a3b8">${i}</text>`;
+      gridLinesHtml += `<text x="${scaleX(0) - 10}" y="${yPos + 2.5}" font-size="7" font-family="monospace" text-anchor="middle" fill="#94a3b8">${i}</text>`;
+    }
+    
+    // Principal X and Y Axes lines
+    const axisLinesHtml = `
+      <line x1="${padding}" y1="${scaleY(0)}" x2="${width - padding}" y2="${scaleY(0)}" stroke="${axisColor}" stroke-width="1.8" />
+      <line x1="${scaleX(0)}" y1="${padding}" x2="${scaleX(0)}" y2="${height - padding}" stroke="${axisColor}" stroke-width="1.8" />
+      <polygon points="${width - padding + 5},${scaleY(0)} ${width - padding},${scaleY(0) - 3} ${width - padding},${scaleY(0) + 3}" fill="${axisColor}" />
+      <polygon points="${scaleX(0)},${padding - 5} ${scaleX(0) - 3},${padding} ${scaleX(0) + 3},${padding}" fill="${axisColor}" />
+      <text x="${width - padding + 4}" y="${scaleY(0) - 5}" font-size="8" font-family="sans-serif" font-weight="bold" fill="#475569">x</text>
+      <text x="${scaleX(0) + 7}" y="${padding - 1}" font-size="8" font-family="sans-serif" font-weight="bold" fill="#475569">y</text>
+    `;
+
+    svg.innerHTML += gridLinesHtml + axisLinesHtml;
+
+    // Draw Mirror / Reflection lines dynamically
+    if (data.mirror) {
+      let reflectionLineHtml = '';
+      if (data.mirror === 'x') {
+        reflectionLineHtml = `<line x1="${padding}" y1="${scaleY(0)}" x2="${width - padding}" y2="${scaleY(0)}" stroke="#7A6AE0" stroke-width="2.5" stroke-dasharray="4,3" />`;
+      } else if (data.mirror === 'y') {
+        reflectionLineHtml = `<line x1="${scaleX(0)}" y1="${padding}" x2="${scaleX(0)}" y2="${height - padding}" stroke="#7A6AE0" stroke-width="2.5" stroke-dasharray="4,3" />`;
+      } else if (data.mirror === 'yx') {
+        reflectionLineHtml = `<line x1="${scaleX(-range)}" y1="${scaleY(-range)}" x2="${scaleX(range)}" y2="${scaleY(range)}" stroke="#7A6AE0" stroke-width="2.5" stroke-dasharray="4,3" />`;
+      } else if (data.mirror === 'y-x') {
+        reflectionLineHtml = `<line x1="${scaleX(-range)}" y1="${scaleY(range)}" x2="${scaleX(range)}" y2="${scaleY(-range)}" stroke="#7A6AE0" stroke-width="2.5" stroke-dasharray="4,3" />`;
+      } else if (data.mirror === 'o') {
+        reflectionLineHtml = `<circle cx="${scaleX(0)}" cy="${scaleY(0)}" r="4.5" fill="#7A6AE0" stroke="white" stroke-width="1.5" />`;
+      }
+      svg.innerHTML += reflectionLineHtml;
+    }
+
+    // Helper functions to draw complete polygons / triangles / squares
+    const drawPolygon = (pts, fillColor, strokeColor, isDash = false, labelPrefix = '') => {
+      if (pts.length === 1) {
+        // Draw standard point circle coordinate dot
+        const p = pts[0];
+        const cx = scaleX(p[0]);
+        const cy = scaleY(p[1]);
+        return `
+          <circle cx="${cx}" cy="${cy}" r="5.5" fill="${fillColor}" stroke="white" stroke-width="1.8" />
+          <text x="${cx + 8}" y="${cy - 8}" font-size="8" font-family="sans-serif" font-weight="bold" fill="${fillColor}">${labelPrefix}(${p[0]},${p[1]})</text>
+        `;
+      } else {
+        // Draw Polygon shape connecting lines
+        const polyPoints = pts.map(p => `${scaleX(p[0])},${scaleY(p[1])}`).join(' ');
+        let pointsHtml = `<polygon points="${polyPoints}" fill="${fillColor}25" stroke="${strokeColor}" stroke-width="2" ${isDash ? 'stroke-dasharray="3,3"' : ''} />`;
+        
+        pts.forEach((p, i) => {
+          const l = String.fromCharCode(65 + i) + labelPrefix;
+          const cx = scaleX(p[0]);
+          const cy = scaleY(p[1]);
+          pointsHtml += `
+            <circle cx="${cx}" cy="${cy}" r="4" fill="${strokeColor}" stroke="white" stroke-width="1.2" />
+            <text x="${cx + 6}" y="${cy - 6}" font-size="7" font-family="sans-serif" font-weight="bold" fill="${strokeColor}">${l}(${p[0]},${p[1]})</text>
+          `;
+        });
+        return pointsHtml;
+      }
+    };
+
+    // Draw Initial Original Points/Shapes (dark gray/navy style)
+    if (data.points) {
+      svg.innerHTML += drawPolygon(data.points, "#475569", "#1e293b", false, "P");
+    }
+
+    // Draw Transformed / Target Image Points/Shapes
+    const answered = userAnswers[currentIdx] !== null;
+    if (data.image && answered) {
+      // Connect vector translation / mapping trace guides (light dotted indicators)
+      let traceGuideHtml = '';
+      data.points.forEach((startPt, index) => {
+        const endPt = data.image[index];
+        if (endPt) {
+          traceGuideHtml += `<line x1="${scaleX(startPt[0])}" y1="${scaleY(startPt[1])}" x2="${scaleX(endPt[0])}" y2="${scaleY(endPt[1])}" stroke="${primaryColor}" stroke-width="1" stroke-dasharray="2,2" />`;
+        }
+      });
+      svg.innerHTML += traceGuideHtml;
+
+      // Draw transformed points shape
+      svg.innerHTML += drawPolygon(data.image, primaryColor, primaryColor, false, "P'");
+    }
+  }
+
+  /* ============ NAVIGATION DRAWER GRID MODAL ============ */
+  function openNavModal() {
+    document.getElementById('nav-modal').classList.remove('hidden');
+  }
+
+  function closeNavModal() {
+    document.getElementById('nav-modal').classList.add('hidden');
+  }
+
+  function renderNavigationGrid() {
+    const grid = document.getElementById('nav-questions-grid');
+    grid.innerHTML = '';
+
+    for (let i = 0; i < QUESTIONS.length; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = i + 1;
+      
+      // Compute question state styling
+      const answered = userAnswers[i] !== null;
+      const isCurrent = i === currentIdx;
+
+      let btnClass = "w-full aspect-square font-mono text-xs font-bold rounded-xl flex items-center justify-center border transition-all duration-150 ";
+      
+      if (isCurrent) {
+        btnClass += "bg-amber-400 border-amber-500 text-navy-950 ring-4 ring-amber-500/20";
+      } else if (answered) {
+        // If answered, check if correct or wrong
+        const isCorrect = userAnswers[i] === QUESTIONS[i].answerIndex;
+        if (isCorrect) {
+          btnClass += "bg-emerald-500/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30";
+        } else {
+          btnClass += "bg-rose-500/20 border-rose-500/40 text-rose-300 hover:bg-rose-500/30";
+        }
+      } else {
+        btnClass += "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20";
+      }
+
+      btn.className = btnClass;
+      btn.onclick = () => jumpToQuestion(i);
+      grid.appendChild(btn);
+    }
+  }
+
+  /* ============ REPORT & RESULTS PAGE ============ */
+  function showResults() {
+    // Stop the background timer
+    clearInterval(timerInterval);
+
+    // Swap work screens
+    document.getElementById('quiz-workspace').classList.add('hidden');
+    document.getElementById('results-workspace').classList.remove('hidden');
+
+    // Calculations
+    let totalCorrect = 0;
+    let categoryStats = {
+      "Translasi": { correct: 0, total: 0 },
+      "Refleksi": { correct: 0, total: 0 },
+      "Rotasi": { correct: 0, total: 0 },
+      "Dilatasi": { correct: 0, total: 0 },
+      "Komposisi": { correct: 0, total: 0 }
+    };
+
+    userAnswers.forEach((ans, i) => {
+      const q = QUESTIONS[i];
+      categoryStats[q.category].total++;
+      if (ans === q.answerIndex) {
+        totalCorrect++;
+        categoryStats[q.category].correct++;
+      }
+    });
+
+    const totalQuestions = QUESTIONS.length;
+    const finalScore = Math.round((totalCorrect / totalQuestions) * 100);
+    const accuracy = Math.round((totalCorrect / totalQuestions) * 100);
+
+    // Set Report Stats UI values
+    document.getElementById('res-score').textContent = finalScore;
+    document.getElementById('res-accuracy').textContent = `${accuracy}%`;
+    document.getElementById('res-correct').textContent = `${totalCorrect} / ${totalQuestions}`;
+
+    // Format timer stats
+    const elapsed = Math.floor((Date.now() - quizStartTime) / 1000);
+    const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const seconds = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('res-time').textContent = `${minutes}:${seconds}`;
+
+    // Set custom grade comments
+    const congrats = document.getElementById('congrats-text');
+    if (finalScore >= 90) {
+      congrats.innerHTML = `🎖️ <strong>Luar Biasa!</strong> Nilai kamu sempurna. Kamu telah benar-benar menguasai seluruh konsep transformasi geometri. Sangat membanggakan!`;
+    } else if (finalScore >= 75) {
+      congrats.innerHTML = `🌟 <strong>Hebat!</strong> Hasil yang memuaskan. Kamu sudah memahami materi dengan baik. Sedikit latihan lagi untuk menyempurnakan pemahamanmu.`;
+    } else if (finalScore >= 60) {
+      congrats.innerHTML = `📚 <strong>Bagus!</strong> Kamu sudah melewati batas ketuntasan minimum. Pelajari kembali bab yang masih bingung agar nilai belajarmu meningkat.`;
+    } else {
+      congrats.innerHTML = `☕ <strong>Tetap Semangat!</strong> Jangan berkecil hati. Jadikan kuis ini sarana belajar. Coba ulas pembahasan soal yang salah untuk memahaminya lebih baik.`;
+    }
+
+    // Build Topic Performance charts
+    const container = document.getElementById('topic-performance-container');
+    container.innerHTML = '';
+
+    Object.keys(categoryStats).forEach(cat => {
+      const stats = categoryStats[cat];
+      const rate = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
+      
+      let barColor = "bg-rose-500";
+      if (rate >= 80) barColor = "bg-emerald-500";
+      else if (rate >= 60) barColor = "bg-amber-500";
+
+      const card = document.createElement('div');
+      card.className = "bg-navy-950/30 p-4 rounded-xl border border-white/5 flex flex-col gap-2";
+      card.innerHTML = `
+        <div class="flex justify-between items-center">
+          <span class="font-display font-semibold text-sm text-paper">${cat}</span>
+          <span class="font-mono text-xs text-white/60">${stats.correct} dari ${stats.total} (${rate}%)</span>
+        </div>
+        <div class="w-full bg-white/5 rounded-full h-2">
+          <div class="h-full rounded-full ${barColor} transition-all duration-300" style="width: ${rate}%"></div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function viewAnswersHistory() {
+    // Takes user back to the quiz interface, but with modal navigation grid enabled to read explanations
+    document.getElementById('results-workspace').classList.add('hidden');
+    document.getElementById('quiz-workspace').classList.remove('hidden');
+    currentIdx = 0;
+    renderQuestion();
+    renderNavigationGrid();
+    openNavModal();
+  }
+</script>
+</body>
+</html>
